@@ -78,6 +78,7 @@ const PROJECTS_DATA = [
     cursorPrompt: 'VIEW CASE ↗',
     role: 'Frontend & Web Implementation',
     stack: ['Laravel', 'Vite', 'PHP', 'JavaScript', 'MySQL'],
+    image: '/sifest.jpeg',
     summary:
       'Official event web platform developed for SIFEST 2026, combining modern frontend bundling with structured backend architecture.',
     overview:
@@ -90,50 +91,52 @@ const PROJECTS_DATA = [
     previewType: 'sifest',
   },
   {
-    id: 'motorcycle-parking-quota',
+    id: 'taskboard-app',
     index: '02',
-    title: 'Motorcycle Parking Quota System',
-    category: 'Object-Oriented System Development',
+    title: 'Interactive Taskboard Application',
+    category: 'Web Application & Productivity Tool',
     year: '2025',
     featured: false,
     isPlaceholder: false,
-    statusLabel: 'ACADEMIC SYSTEM // OOP',
+    statusLabel: 'PRODUCTIVITY TOOL',
     cursorPrompt: 'VIEW CASE ↗',
-    role: 'Java Developer (Coursework)',
-    stack: ['Java', 'NetBeans', 'OOP'],
+    role: 'Frontend Developer',
+    stack: ['React', 'JavaScript', 'Tailwind CSS', 'State Management'],
+    image: '/taskboard.jpeg',
     summary:
-      'Console and class-structured parking quota management system built for Object-Oriented Programming coursework.',
+      'Aplikasi taskboard interaktif untuk pengorganisasian tugas, manajemen alur kerja, dan pelacakan progres proyek secara efisien.',
     overview:
-      'Designed and implemented a structured motorcycle parking slot and quota tracking system using core Object-Oriented Programming principles—encapsulating vehicle records, capacity validation, and entry/exit state transitions.',
+      'Dirancang untuk memberikan pengalaman manajemen tugas dan alur kerja yang intuitif dan terstruktur. Mengintegrasikan kolom status (To-Do, In Progress, Done) dengan navigasi cepat, antarmuka visual clean, serta sistem persistensi data lokal yang responsif.',
     architecturalNotes: [
-      'Modular class hierarchy separating vehicle entities, parking zone capacity counters, and transaction logs.',
-      'Encapsulation and state validation to enforce real-time slot availability and prevent quota overflow.',
-      'Developed and tested in Java using NetBeans with clean console interaction workflows.',
+      'Modular task card & column architecture dengan visual pipeline yang terorganisir.',
+      'Optimasi alur interaksi pengguna berbasis antarmuka responsif dan minim gesekan.',
+      'Pengorganisasian hierarki tugas, label prioritas, serta arsitektur state yang mudah dikembangkan.',
     ],
-    previewType: 'oop-parking',
+    previewType: 'taskboard',
   },
   {
-    id: 'upcoming-lab-case-study',
+    id: 'linktree-bio',
     index: '03',
-    title: 'Upcoming Lab & Case Study',
-    category: 'UI/UX & Network Topology',
-    year: '2026',
+    title: 'Personal Bio Linktree Platform',
+    category: 'Responsive Web Page & Social Hub',
+    year: '2025',
     featured: false,
-    isPlaceholder: true,
-    statusLabel: 'MODULAR SLOT // 03',
-    cursorPrompt: 'PREVIEW',
-    role: 'UI/UX Designer & Network Enthusiast',
-    stack: ['Figma', 'MikroTik', 'Cisco'],
+    isPlaceholder: false,
+    statusLabel: 'DIGITAL IDENTITY',
+    cursorPrompt: 'VIEW CASE ↗',
+    role: 'UI Designer & Web Implementation',
+    stack: ['HTML5', 'CSS3', 'JavaScript', 'Responsive UI'],
+    image: '/linktree.jpeg',
     summary:
-      'Modular slot reserved for upcoming interface design and network simulation documentation.',
+      'Halaman bio link personal yang responsif dan elegan sebagai agregator identitas digital, jejaring sosial, dan portofolio.',
     overview:
-      'A dedicated archival slot reserved for upcoming UI/UX design system documentation and segmented network routing labs bridging visual interface engineering with MikroTik and Cisco infrastructure.',
+      'Platform single-page responsive yang diformulasikan sebagai sentra koneksi digital personal. Menggabungkan estetika visual modern, micro-interactions halus pada tombol tautan, serta optimasi tampilan sempurna di layar smartphone.',
     architecturalNotes: [
-      'Token-driven component specifications drafted in Figma with strict grid and contrast rules.',
-      'VLAN segmentation, static/dynamic routing, and firewall rule sets modeled on MikroTik & Cisco environments.',
-      'Structured for seamless integration into the centralized portfolio project registry.',
+      'Mobile-first responsive architecture dirancang presisi untuk rasio layar perangkat genggam.',
+      'Micro-interactions hover states dan styling tombol dengan kontras tinggi serta aksesibilitas terjaga.',
+      'Performa rendering ultra-cepat dengan beban aset minimal dan eksekusi instan.',
     ],
-    previewType: 'network-topology',
+    previewType: 'linktree',
   },
 ];
 
@@ -1362,143 +1365,70 @@ function Interactive3DPreviewFrame({ children, className = '' }) {
   );
 }
 
-function ProjectArtworkPreview({ type, compact = false }) {
-  if (type === 'sifest') {
-    return (
-      <div
-        className={`relative w-full h-full ${
-          compact ? 'min-h-[210px] p-4 sm:p-5' : 'min-h-[260px] sm:min-h-[340px] p-5 sm:p-8'
-        } bg-[#141414] flex flex-col justify-between overflow-hidden rounded-none`}
-      >
-        {/* Background Swiss Grid */}
-        <div
-          aria-hidden="true"
-          className="absolute inset-0 opacity-25"
-          style={{
-            backgroundImage:
-              'linear-gradient(to right, #2A2A2A 1px, transparent 1px), linear-gradient(to bottom, #2A2A2A 1px, transparent 1px)',
-            backgroundSize: '36px 36px',
-          }}
-        />
+function ProjectArtworkPreview({ project, type, compact = false }) {
+  const currentProject =
+    project ||
+    PROJECTS_DATA.find((p) => p.previewType === type || p.id === type) ||
+    PROJECTS_DATA[0];
 
-        {/* Top Browser / System Frame Header */}
-        <div className="relative z-10 flex items-center justify-between border border-[#2A2A2A] bg-[#101010] px-4 py-2.5 rounded-none">
-          <div className="flex items-center gap-2">
-            <span className="w-2.5 h-2.5 rounded-none bg-[#EF233C]" />
-            <span className="w-2.5 h-2.5 rounded-none bg-[#2A2A2A]" />
-            <span className="w-2.5 h-2.5 rounded-none bg-[#2A2A2A]" />
-          </div>
-          <span className="font-mono-tech text-[10px] tracking-[0.2em] uppercase text-[#8E8D8A]">
-            SIFEST.2026 // LARAVEL + VITE
-          </span>
-          <Globe className="w-3.5 h-3.5 text-[#EF233C]" />
-        </div>
+  const imgSrc =
+    currentProject?.image ||
+    (type === 'sifest'
+      ? '/sifest.jpeg'
+      : type === 'taskboard'
+      ? '/taskboard.jpeg'
+      : '/linktree.jpeg');
 
-        {/* Editorial Display Specimen Inside Frame */}
-        <div className="relative z-10 my-5 border-l-2 border-[#EF233C] pl-4 sm:pl-6">
-          <p className="font-mono-tech text-[10px] tracking-[0.25em] uppercase text-[#EF233C] mb-1.5">
-            HIMSI FASILKOM UNSRI — EVENT PLATFORM
-          </p>
-          <div
-            className={`${
-              compact ? 'text-2xl sm:text-3xl' : 'text-3xl sm:text-5xl'
-            } font-extrabold tracking-[-0.04em] text-[#F1EEE8] leading-none`}
-          >
-            SIFEST <span className="font-editorial-serif italic font-normal text-[#EF233C]">2026</span>
-          </div>
-          {!compact && (
-            <p className="mt-2.5 text-xs sm:text-sm text-[#8E8D8A] max-w-md">
-              Modular web architecture pairing Vite asset bundling with structured Laravel controllers and MySQL schema.
-            </p>
-          )}
-        </div>
-
-        {/* Bottom Architectural Module Strip */}
-        <div className="relative z-10 grid grid-cols-3 gap-2 font-mono-tech text-[10px] uppercase tracking-wider">
-          <div className="border border-[#2A2A2A] bg-[#101010]/90 p-2 rounded-none">
-            <span className="text-[#EF233C] block mb-0.5">01 / FRONT</span>
-            <span className="text-[#F1EEE8]">VITE + JS</span>
-          </div>
-          <div className="border border-[#2A2A2A] bg-[#101010]/90 p-2 rounded-none">
-            <span className="text-[#EF233C] block mb-0.5">02 / CORE</span>
-            <span className="text-[#F1EEE8]">LARAVEL PHP</span>
-          </div>
-          <div className="border border-[#2A2A2A] bg-[#101010]/90 p-2 rounded-none">
-            <span className="text-[#EF233C] block mb-0.5">03 / DATA</span>
-            <span className="text-[#F1EEE8]">MYSQL DB</span>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  if (type === 'oop-parking') {
-    return (
-      <div
-        className={`relative w-full h-full ${
-          compact ? 'min-h-[210px] p-4 sm:p-5' : 'min-h-[240px] p-6'
-        } bg-[#141414] flex flex-col justify-between overflow-hidden rounded-none`}
-      >
-        <div className="flex items-center justify-between font-mono-tech text-[10px] tracking-[0.2em] uppercase text-[#8E8D8A]">
-          <span>JAVA // OBJECT-ORIENTED SYSTEM</span>
-          <Layers className="w-4 h-4 text-[#EF233C]" />
-        </div>
-
-        <div className="my-4 grid grid-cols-3 gap-2 font-mono-tech text-[10px]">
-          <div className="border border-[#EF233C]/70 bg-[#101010] p-2.5 rounded-none">
-            <span className="text-[#EF233C] block mb-1">CLASS // 01</span>
-            <span className="text-[#F1EEE8]">ParkingZone</span>
-          </div>
-          <div className="border border-[#2A2A2A] bg-[#101010] p-2.5 rounded-none">
-            <span className="text-[#8E8D8A] block mb-1">CLASS // 02</span>
-            <span className="text-[#F1EEE8]">Motorcycle</span>
-          </div>
-          <div className="border border-[#2A2A2A] bg-[#101010] p-2.5 rounded-none">
-            <span className="text-[#8E8D8A] block mb-1">CLASS // 03</span>
-            <span className="text-[#F1EEE8]">QuotaManager</span>
-          </div>
-          <div className="col-span-3 border border-[#2A2A2A] bg-[#101010] px-3 py-2 flex items-center justify-between rounded-none">
-            <span className="text-[#8E8D8A]">NETBEANS IDE // CAPACITY VALIDATION</span>
-            <span className="w-2 h-2 rounded-none bg-[#EF233C]" />
-          </div>
-        </div>
-
-        <div className="font-mono-tech text-[10px] tracking-[0.18em] uppercase text-[#8E8D8A]">
-          ACADEMIC SYSTEM // CASE 02
-        </div>
-      </div>
-    );
-  }
+  const title = currentProject?.title || 'Project Showcase';
 
   return (
     <div
-      className={`relative w-full h-full ${
-        compact ? 'min-h-[210px] p-4 sm:p-5' : 'min-h-[240px] p-6'
-      } bg-[#141414] flex flex-col justify-between overflow-hidden rounded-none`}
+      className={`relative w-full ${
+        compact ? 'min-h-[220px]' : 'min-h-[280px] sm:min-h-[380px]'
+      } bg-[#07090C] flex flex-col justify-between overflow-hidden select-none`}
     >
-      <div className="flex items-center justify-between font-mono-tech text-[10px] tracking-[0.2em] uppercase text-[#8E8D8A]">
-        <span>TOPOLOGY // VLAN &amp; OOP</span>
-        <Cpu className="w-4 h-4 text-[#EF233C]" />
+      {/* Top Browser / Window Header */}
+      <div className="relative z-10 flex items-center justify-between border-b border-[#1E2630] bg-[#0A0D12] px-4 py-2.5">
+        <div className="flex items-center gap-2">
+          <span className="w-2.5 h-2.5 rounded-none bg-[#EF233C]" />
+          <span className="w-2.5 h-2.5 rounded-none bg-[#2A3441]" />
+          <span className="w-2.5 h-2.5 rounded-none bg-[#1E2630]" />
+          <span className="font-mono-tech text-[10px] tracking-[0.2em] uppercase text-[#8E8D8A] ml-2">
+            {currentProject?.id || type}.faris.dev
+          </span>
+        </div>
+        <div className="flex items-center gap-3">
+          <a
+            href={imgSrc}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="px-2.5 py-1 font-mono-tech text-[9px] uppercase tracking-wider text-[#F1EEE8] bg-[#141414] hover:bg-[#EF233C] border border-[#2A2A2A] transition-colors"
+          >
+            Lihat Ukuran Penuh ↗
+          </a>
+          <span className="font-mono-tech text-[10px] text-[#EF233C] font-bold">
+            FIG. 0{currentProject?.index || '1'}
+          </span>
+        </div>
       </div>
 
-      {/* Schematic Node Diagram */}
-      <div className="my-4 flex flex-col items-center justify-center gap-2.5 font-mono-tech text-[10px]">
-        <div className="border border-[#EF233C] bg-[#101010] px-4 py-1.5 text-[#F1EEE8] tracking-widest rounded-none">
-          CORE ROUTER // MIKROTIK
-        </div>
-        <div className="h-3 w-[1px] bg-[#EF233C]" />
-        <div className="w-full grid grid-cols-2 gap-2.5">
-          <div className="border border-[#2A2A2A] bg-[#101010] p-2 text-center text-[#8E8D8A] rounded-none">
-            CISCO SWITCH // VLAN
-          </div>
-          <div className="border border-[#2A2A2A] bg-[#101010] p-2 text-center text-[#8E8D8A] rounded-none">
-            JAVA OOP // MODULE
-          </div>
-        </div>
+      {/* Main Real Image Showcase Stage */}
+      <div className="relative z-10 my-2 aspect-[16/9] w-full bg-[#030406] flex items-center justify-center overflow-hidden group/art">
+        <img
+          src={imgSrc}
+          alt={title}
+          className="w-full h-full object-contain bg-black/85 transition-transform duration-500 group-hover/art:scale-[1.02]"
+        />
+        <div className="absolute inset-0 pointer-events-none bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-40" />
       </div>
 
-      <div className="font-mono-tech text-[10px] tracking-[0.18em] uppercase text-[#8E8D8A]">
-        RESERVED ARCHIVE // CASE 03
+      {/* Bottom Telemetry Bar */}
+      <div className="relative z-10 flex items-center justify-between font-mono-tech text-[9px] tracking-[0.16em] uppercase text-[#8E8D8A] px-4 py-2 border-t border-[#1E2630] bg-[#0A0D12]">
+        <div className="flex items-center gap-2">
+          <span className="w-1.5 h-1.5 bg-[#EF233C] animate-pulse" />
+          <span className="text-[#F1EEE8]">{title}</span>
+        </div>
+        <span className="text-[#EF233C]">VERIFIED BUILD</span>
       </div>
     </div>
   );
@@ -1918,60 +1848,38 @@ function ViewportScreenContent({ step, mode, project }) {
           </div>
         )}
 
-        {/* Step 3: Live Micro-Motion & Engine */}
+        {/* Step 3: Live Micro-Motion & Real Project Screenshot */}
         {step === 3 && (
           <div className="space-y-1 select-none h-full flex flex-col justify-between">
             <div className="flex items-center justify-between border-b border-[#1E2630] pb-0.5 text-[6px] font-mono-tech">
               <span className="text-[#EF233C] font-semibold flex items-center gap-1">
                 <span className="w-1.5 h-1.5 rounded-full bg-[#EF233C] animate-ping" />
-                LIVE DEPLOYED
+                LIVE SCREENSHOT
               </span>
-              <span className="text-[#8E8D8A]">60 FPS</span>
+              <span className="text-[#8E8D8A]">DEPLOYED</span>
             </div>
 
-            {project.previewType === 'sifest' ? (
-              <div className="p-1 border border-[#EF233C]/40 bg-[#12161F] space-y-0.5">
-                <div className="flex items-center justify-between text-[6px] font-mono-tech text-[#8E8D8A]">
-                  <span className="text-[#EF233C] font-bold">SIFEST &bull; 2026</span>
-                  <span className="px-1 bg-[#EF233C]/20 text-[#EF233C]">ACTIVE</span>
+            <div className="relative flex-1 my-0.5 overflow-hidden border border-[#1E2630] bg-[#05070A] group/screen">
+              {project.image ? (
+                <img
+                  src={project.image}
+                  alt={project.title}
+                  className="w-full h-full object-cover object-top filter contrast-[1.05] transition-transform duration-500 group-hover/screen:scale-105"
+                />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center text-[7px] font-mono-tech text-[#8E8D8A]">
+                  SCREENSHOT
                 </div>
-                <div className="text-[7px] font-extrabold font-mono-tech text-[#F1EEE8] tracking-wider">
-                  12D : 08H : 40M
-                </div>
-                <div className="text-[5px] text-[#8E8D8A] font-mono-tech">
-                  VITE HMR &bull; LARAVEL MVC
-                </div>
+              )}
+              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent pointer-events-none" />
+              <div className="absolute bottom-1 left-1 right-1 flex items-center justify-between font-mono-tech text-[5px] text-[#F1EEE8] px-1 py-0.5 bg-black/70 backdrop-blur-xs border border-white/10">
+                <span className="truncate">{project.title}</span>
+                <span className="text-[#EF233C]">PROD</span>
               </div>
-            ) : project.previewType === 'oop-parking' ? (
-              <div className="p-1 border border-[#EF233C]/40 bg-[#12161F] space-y-0.5">
-                <div className="flex items-center justify-between text-[6px] font-mono-tech text-[#8E8D8A]">
-                  <span className="text-[#EF233C] font-bold">SLOT QUOTA</span>
-                  <span className="px-1 bg-[#EF233C]/20 text-[#EF233C]">BUFFER</span>
-                </div>
-                <div className="text-[7px] font-extrabold font-mono-tech text-[#F1EEE8] tracking-wider">
-                  SLOTS: 42 / 50
-                </div>
-                <div className="text-[5px] text-[#8E8D8A] font-mono-tech">
-                  STATE: OK
-                </div>
-              </div>
-            ) : (
-              <div className="p-1 border border-[#EF233C]/40 bg-[#12161F] space-y-0.5">
-                <div className="flex items-center justify-between text-[6px] font-mono-tech text-[#8E8D8A]">
-                  <span className="text-[#EF233C] font-bold">VLAN ROUTING</span>
-                  <span className="px-1 bg-[#EF233C]/20 text-[#EF233C]">ONLINE</span>
-                </div>
-                <div className="text-[7px] font-extrabold font-mono-tech text-[#F1EEE8] tracking-wider">
-                  LATENCY: 1.2MS &bull; 0% LOSS
-                </div>
-                <div className="text-[5px] text-[#8E8D8A] font-mono-tech">
-                  CISCO / MIKROTIK
-                </div>
-              </div>
-            )}
+            </div>
 
             <div className="text-[6px] font-mono-tech text-[#8E8D8A] flex justify-between border-t border-[#1E2630] pt-0.5">
-              <span className="text-[#F1EEE8]">INTERACTIVE</span>
+              <span className="text-[#F1EEE8] truncate">{project.stack[0]}</span>
               <span className="text-[#EF233C]">STEP 04</span>
             </div>
           </div>
@@ -2133,7 +2041,7 @@ function ProjectStackCard({
   onCursorChange,
   onOpenModal,
 }) {
-  const [activeStep, setActiveStep] = useState(0);
+  const [activeStep, setActiveStep] = useState(3);
   const [hoveredStep, setHoveredStep] = useState(null);
   const [hoveredDevice, setHoveredDevice] = useState(null);
   const prefersReducedMotion = useReducedMotion();
@@ -3544,7 +3452,7 @@ function ProjectModal({ project, onClose }) {
 
             {/* Visual Schematic Artwork */}
             <Floating3DElement depth={15} className="border-b border-[#1E2630] relative overflow-hidden bg-[#07090C]">
-              <ProjectArtworkPreview type={project.previewType} />
+              <ProjectArtworkPreview type={project.previewType} project={project} />
             </Floating3DElement>
 
             {/* Sibal Design 2-Column Multi-Telemetry Body (3D Parallax Space) */}
