@@ -142,7 +142,7 @@ const EXPERIENCE_DATA = [
     status: 'VERIFIED INTERNSHIP',
     description:
       'Melaksanakan program magang di PT Telkom Akses Wilayah Telekomunikasi Sumatera Selatan pada Divisi Maintenance, berfokus pada pemeliharaan infrastruktur kabel fiber optik, monitoring stabilitas link broadband, serta penanganan gangguan fisik dan perangkat jaringan.',
-    tags: ['Fiber Optic', 'OTDR', 'FTTH', 'Network Maintenance', 'Optical Splicing'],
+    tags: ['Network Maintenance'],
     previewType: 'telkom-maintenance',
     hasPhotoSlot: false,
     highlights: [
