@@ -2475,46 +2475,9 @@ function ExperienceArtworkPreview({ experience }) {
     }
   };
 
-  // ITEM 1: Telkom Akses (Technical infrastructure schematic view)
+  // ITEM 1: Telkom Akses (Dihilangkan bagian visual preview/schematic sesuai instruksi)
   if (!experience?.hasPhotoSlot || experience?.previewType === 'telkom-maintenance') {
-    return (
-      <div className="relative w-full min-h-[220px] bg-[#0A0D12] p-6 flex flex-col justify-between overflow-hidden">
-        <div className="flex items-center justify-between font-mono-tech text-[10px] tracking-[0.2em] uppercase text-[#8E8D8A]">
-          <span className="flex items-center gap-2">
-            <span className="w-2 h-2 rounded-none bg-[#EF233C]" />
-            <span>TELKOM AKSES // DIVISI MAINTENANCE</span>
-          </span>
-          <Globe className="w-4 h-4 text-[#EF233C]" />
-        </div>
-
-        <div className="my-4 border-l-2 border-[#EF233C] pl-4">
-          <div className="font-mono-tech text-[10px] tracking-[0.2em] uppercase text-[#EF233C]">
-            SUMATERA SELATAN — TELECOMMUNICATION INFRASTRUCTURE
-          </div>
-          <div className="text-xl sm:text-2xl font-extrabold text-[#F1EEE8] tracking-tight">
-            Fiber Optic Maintenance & Troubleshooting
-          </div>
-          <p className="text-xs text-[#8E8D8A] mt-1">
-            Optical Distribution Point (ODP) • Optical Distribution Cabinet (ODC) • Link Loss Analysis
-          </p>
-        </div>
-
-        <div className="grid grid-cols-3 gap-2 font-mono-tech text-[10px] uppercase">
-          <div className="border border-[#1E2630] bg-[#12161F] p-2.5 text-center text-[#F1EEE8]">
-            <span className="text-[#8E8D8A] block text-[9px]">DIAGNOSTICS</span>
-            <span className="text-[#EF233C] font-bold">OTDR LOSS TEST</span>
-          </div>
-          <div className="border border-[#1E2630] bg-[#12161F] p-2.5 text-center text-[#F1EEE8]">
-            <span className="text-[#8E8D8A] block text-[9px]">CABLING</span>
-            <span className="text-[#F1EEE8] font-bold">FUSION SPLICING</span>
-          </div>
-          <div className="border border-[#1E2630] bg-[#12161F] p-2.5 text-center text-[#F1EEE8]">
-            <span className="text-[#8E8D8A] block text-[9px]">TOPOLOGY</span>
-            <span className="text-[#F1EEE8] font-bold">FTTH ODN LINK</span>
-          </div>
-        </div>
-      </div>
-    );
+    return null;
   }
 
   // ITEM 4: SIFEST 2026 (Dihitamkan karena belum ada sertifikatnya sesuai instruksi)
@@ -2713,10 +2676,12 @@ function ExperienceModal({ experience, onClose }) {
               </div>
             </Floating3DElement>
 
-            {/* Visual Schematic Artwork */}
-            <Floating3DElement depth={15} className="border-b border-[#1E2630] relative overflow-hidden bg-[#07090C]">
-              <ExperienceArtworkPreview experience={experience} />
-            </Floating3DElement>
+            {/* Visual Schematic Artwork (Hanya tampil untuk yang memiliki slot foto/sertifikat) */}
+            {experience?.hasPhotoSlot && (
+              <Floating3DElement depth={15} className="border-b border-[#1E2630] relative overflow-hidden bg-[#07090C]">
+                <ExperienceArtworkPreview experience={experience} />
+              </Floating3DElement>
+            )}
 
             {/* Sibal Design 2-Column Multi-Telemetry Body (3D Parallax Space) */}
             <div className="p-6 sm:p-8 md:p-10 grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10" style={{ transformStyle: 'preserve-3d' }}>
