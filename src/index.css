@@ -2,3 +2,143 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Smooth global theme transition */
+html,
+body,
+header,
+main,
+section,
+article,
+div {
+  transition: background-color 0.25s ease, border-color 0.25s ease, color 0.25s ease;
+}
+
+/* ====================================================================
+ * LIGHT EDITORIAL PAPER THEME OVERRIDES
+ * ==================================================================== */
+html.light,
+html.light body {
+  background-color: #F8F7F4 !important;
+  color: #141414 !important;
+  color-scheme: light;
+}
+
+/* Base Canvas & Backgrounds */
+html.light .bg-\[\#101010\] {
+  background-color: #F8F7F4 !important;
+}
+
+html.light .bg-\[\#101010\]\/90 {
+  background-color: rgba(248, 247, 244, 0.90) !important;
+}
+
+html.light .bg-\[\#101010\]\/94 {
+  background-color: rgba(248, 247, 244, 0.94) !important;
+}
+
+/* Cards & Elevated Surfaces */
+html.light .bg-\[\#141414\] {
+  background-color: #FFFFFF !important;
+}
+
+html.light .bg-\[\#121212\] {
+  background-color: #F0ECE4 !important;
+}
+
+html.light .bg-\[\#1D1D1D\] {
+  background-color: #F0ECE4 !important;
+}
+
+html.light .hover\:bg-\[\#1D1D1D\]:hover {
+  background-color: #E5E0D5 !important;
+}
+
+html.light .bg-\[\#1D1D1D\]\/55,
+html.light .bg-\[\#1D1D1D\]\/60 {
+  background-color: rgba(240, 236, 228, 0.75) !important;
+}
+
+html.light .hover\:bg-\[\#1D1D1D\]\/60:hover {
+  background-color: rgba(229, 224, 213, 0.85) !important;
+}
+
+html.light .bg-\[\#2A2A2A\] {
+  background-color: #DCD6CC !important;
+}
+
+/* Borders & Structural Dividers */
+html.light .border-\[\#2A2A2A\] {
+  border-color: #DCD6CC !important;
+}
+
+html.light .hover\:border-\[\#2A2A2A\]:hover {
+  border-color: #DCD6CC !important;
+}
+
+html.light .border-\[\#2A2A2A\]\/25,
+html.light .border-\[\#2A2A2A\]\/35,
+html.light .border-\[\#2A2A2A\]\/40,
+html.light .border-\[\#2A2A2A\]\/60 {
+  border-color: rgba(220, 214, 204, 0.65) !important;
+}
+
+html.light .divide-\[\#2A2A2A\] > :not([hidden]) ~ :not([hidden]) {
+  border-color: #DCD6CC !important;
+}
+
+/* Typography & Labels */
+html.light .text-\[\#F1EEE8\] {
+  color: #141414 !important;
+}
+
+html.light .text-\[\#F1EEE8\]\/80 {
+  color: rgba(20, 20, 20, 0.8) !important;
+}
+
+html.light .text-\[\#F1EEE8\]\/85 {
+  color: rgba(20, 20, 20, 0.85) !important;
+}
+
+html.light .text-\[\#F1EEE8\]\/90 {
+  color: rgba(20, 20, 20, 0.9) !important;
+}
+
+html.light .text-\[\#8E8D8A\] {
+  color: #635F59 !important;
+}
+
+html.light .text-\[\#2A2A2A\] {
+  color: #C0B9AD !important;
+}
+
+html.light .group:hover .group-hover\:text-\[\#F1EEE8\] {
+  color: #141414 !important;
+}
+
+/* Red CTA Buttons & Badges Keep White Text */
+html.light a.bg-\[\#EF233C\],
+html.light button.bg-\[\#EF233C\],
+html.light a.bg-\[\#EF233C\] span,
+html.light button.bg-\[\#EF233C\] span,
+html.light a.bg-\[\#EF233C\] .text-\[\#F1EEE8\],
+html.light button.bg-\[\#EF233C\] .text-\[\#F1EEE8\] {
+  color: #FFFFFF !important;
+}
+
+html.light .hover\:bg-\[\#B91C1C\]:hover {
+  background-color: #B91C1C !important;
+  color: #FFFFFF !important;
+}
+
+/* Scrollbars in Light Mode */
+html.light ::-webkit-scrollbar-track {
+  background: #F8F7F4 !important;
+}
+
+html.light ::-webkit-scrollbar-thumb {
+  background: #DCD6CC !important;
+}
+
+html.light ::-webkit-scrollbar-thumb:hover {
+  background: #EF233C !important;
+}
