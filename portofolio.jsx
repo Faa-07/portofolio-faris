@@ -2884,11 +2884,61 @@ function ExperienceSection({ onCursorChange }) {
 
 /**
  * ============================================================================
- * ROW 05 — CONTACT (ARCHITECTURAL 3-CARD TRANSMISSION GRID)
+ * ROW 05 — CONTACT (KINETIC EDITORIAL STAGE + MAGNETIC CTA + SPRING DIRECTORY)
  * ============================================================================
  */
 
-function ContactSignalCard({ id = 'card', children, className = '' }) {
+function MagneticActionButton({
+  href,
+  onClick,
+  children,
+  className = '',
+  onMouseEnter,
+  onMouseLeave,
+}) {
+  const prefersReducedMotion = useReducedMotion();
+  const btnRef = useRef(null);
+  const x = useMotionValue(0);
+  const y = useMotionValue(0);
+  const springX = useSpring(x, { stiffness: 280, damping: 20, mass: 0.35 });
+  const springY = useSpring(y, { stiffness: 280, damping: 20, mass: 0.35 });
+
+  const handleMouseMove = (e) => {
+    if (prefersReducedMotion || !btnRef.current) return;
+    const rect = btnRef.current.getBoundingClientRect();
+    const relX = e.clientX - (rect.left + rect.width / 2);
+    const relY = e.clientY - (rect.top + rect.height / 2);
+    x.set(relX * 0.18);
+    y.set(relY * 0.24);
+  };
+
+  const handleMouseLeave = (e) => {
+    x.set(0);
+    y.set(0);
+    onMouseLeave?.(e);
+  };
+
+  const Component = href ? motion.a : motion.button;
+
+  return (
+    <Component
+      ref={btnRef}
+      href={href}
+      type={href ? undefined : 'button'}
+      onClick={onClick}
+      onMouseMove={handleMouseMove}
+      onMouseEnter={onMouseEnter}
+      onMouseLeave={handleMouseLeave}
+      style={prefersReducedMotion ? undefined : { x: springX, y: springY }}
+      whileTap={prefersReducedMotion ? undefined : { scale: 0.97 }}
+      className={className}
+    >
+      {children}
+    </Component>
+  );
+}
+
+function ContactSignalCard({ children, className = '' }) {
   const cardRef = useRef(null);
   const [edgePos, setEdgePos] = useState({ x: 0, y: 0, active: false });
 
@@ -2904,39 +2954,36 @@ function ContactSignalCard({ id = 'card', children, className = '' }) {
     setEdgePos((prev) => ({ ...prev, active: false }));
   };
 
-  const glowId = `contactCardEdgeGlow-${id}`;
-  const blurId = `contactCardEdgeBlur-${id}`;
-
   return (
     <div
       ref={cardRef}
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
-      className={`relative rounded-none border border-[#2A2A2A] bg-[#141414] overflow-visible transition-colors duration-300 hover:border-[#EF233C]/50 ${className}`}
+      className={`relative rounded-none border border-[#2A2A2A] bg-[#141414] overflow-visible ${className}`}
     >
       <RegistrationCrosshair className="absolute -top-[7px] -left-[4px] z-20" />
       <RegistrationCrosshair className="absolute -top-[7px] -right-[4px] z-20" />
       <RegistrationCrosshair className="absolute -bottom-[7px] -left-[4px] z-20" />
       <RegistrationCrosshair className="absolute -bottom-[7px] -right-[4px] z-20" />
 
-      {/* Perimeter laser edge highlight following cursor */}
+      {/* Perimeter-only laser edge highlight */}
       <svg
         aria-hidden="true"
         className="pointer-events-none absolute -inset-[1px] w-[calc(100%+2px)] h-[calc(100%+2px)] z-10 overflow-visible"
       >
         <defs>
           <radialGradient
-            id={glowId}
+            id="contactCardEdgeGlow"
             cx={edgePos.x}
             cy={edgePos.y}
-            r="200"
+            r="190"
             gradientUnits="userSpaceOnUse"
           >
             <stop offset="0%" stopColor="#EF233C" stopOpacity="1" />
             <stop offset="45%" stopColor="#EF233C" stopOpacity="0.65" />
             <stop offset="100%" stopColor="#EF233C" stopOpacity="0" />
           </radialGradient>
-          <filter id={blurId} x="-20%" y="-20%" width="140%" height="140%">
+          <filter id="contactCardEdgeBlur" x="-20%" y="-20%" width="140%" height="140%">
             <feGaussianBlur stdDeviation="1.5" result="blur" />
             <feMerge>
               <feMergeNode in="blur" />
@@ -2950,9 +2997,9 @@ function ContactSignalCard({ id = 'card', children, className = '' }) {
           width="calc(100% - 1.5px)"
           height="calc(100% - 1.5px)"
           fill="none"
-          stroke={`url(#${glowId})`}
+          stroke="url(#contactCardEdgeGlow)"
           strokeWidth="1.5"
-          filter={`url(#${blurId})`}
+          filter="url(#contactCardEdgeBlur)"
           style={{
             opacity: edgePos.active ? 1 : 0,
             transition: 'opacity 0.25s ease',
@@ -2960,14 +3007,32 @@ function ContactSignalCard({ id = 'card', children, className = '' }) {
         />
       </svg>
 
-      <div className="relative z-10 h-full flex flex-col justify-between">{children}</div>
+      <div className="relative z-10">{children}</div>
     </div>
   );
 }
 
+function getContactChannelIcon(label) {
+  switch (label.toLowerCase()) {
+    case 'email':
+      return Mail;
+    case 'github':
+      return Github;
+    case 'linkedin':
+      return Linkedin;
+    case 'instagram':
+      return Instagram;
+    default:
+      return Globe;
+  }
+}
+
 function ContactSection({ palembangTime, onCursorChange }) {
   const [copied, setCopied] = useState(false);
+  const [hoveredIdx, setHoveredIdx] = useState(null);
   const prefersReducedMotion = useReducedMotion();
+
+  const emailChannel = CONTACT_CHANNELS.find((c) => c.copyable) || CONTACT_CHANNELS[0];
 
   const handleCopyEmail = (e, email) => {
     e.preventDefault();
@@ -2987,222 +3052,337 @@ function ContactSection({ palembangTime, onCursorChange }) {
       subtitle="INQUIRIES & TRANSMISSION"
       title="CONTACT"
       layout="stacked"
-      headerMeta="DIRECT SIGNAL // OPEN TO WORK"
+      headerMeta="SIGNAL // DIRECT CHANNEL"
     >
-      <div className="space-y-8 lg:space-y-10">
-        {/* Top Kinetic Editorial Headline & Invitation */}
-        <div className="border border-[#2A2A2A] bg-[#141414] p-6 sm:p-8 lg:p-10 relative overflow-hidden">
-          <RegistrationCrosshair className="absolute -top-[7px] -left-[4px] z-20" />
-          <RegistrationCrosshair className="absolute -top-[7px] -right-[4px] z-20" />
-          <RegistrationCrosshair className="absolute -bottom-[7px] -left-[4px] z-20" />
-          <RegistrationCrosshair className="absolute -bottom-[7px] -right-[4px] z-20" />
-
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-center">
-            {/* Left Headline */}
-            <div className="lg:col-span-7 space-y-3">
-              <div className="font-mono-tech text-[10px] sm:text-[11px] tracking-[0.25em] text-[#EF233C] uppercase flex items-center gap-2">
-                <span className="w-1.5 h-1.5 bg-[#EF233C]" />
-                TRANSMISSION // INITIALIZE CONNECTION
-              </div>
+      <div className="space-y-10 lg:space-y-12">
+        {/* Main 12-Column Architectural Stage */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10 items-stretch">
+          {/* LEFT COLUMN (5 cols): Kinetic Headline + Live Signal Telemetry & Magnetic CTA */}
+          <div className="lg:col-span-5 flex flex-col justify-between gap-6">
+            <div className="space-y-4">
+              {/* Masked Editorial Kinetic Headline Reveal */}
               <div className="space-y-1">
-                <h3 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-[-0.035em] text-[#F1EEE8] leading-[1.08]">
-                  Have an idea?
-                </h3>
-                <div className="text-3xl sm:text-4xl lg:text-5xl font-editorial-serif italic font-normal text-[#EF233C] leading-[1.08]">
-                  Let&apos;s make it happen.
+                <div className="overflow-hidden">
+                  <motion.h3
+                    initial={prefersReducedMotion ? false : { y: '100%', opacity: 0 }}
+                    whileInView={{ y: '0%', opacity: 1 }}
+                    viewport={{ once: true, amount: 0.35 }}
+                    transition={{ duration: 0.65, ease: [0.22, 1, 0.36, 1] }}
+                    className="text-3xl sm:text-4xl xl:text-[2.85rem] font-extrabold tracking-[-0.035em] text-[#F1EEE8] leading-[1.06]"
+                  >
+                    Have an idea?
+                  </motion.h3>
+                </div>
+                <div className="overflow-hidden">
+                  <motion.div
+                    initial={prefersReducedMotion ? false : { y: '100%', opacity: 0 }}
+                    whileInView={{ y: '0%', opacity: 1 }}
+                    viewport={{ once: true, amount: 0.35 }}
+                    transition={{ duration: 0.72, delay: 0.08, ease: [0.22, 1, 0.36, 1] }}
+                    className="text-3xl sm:text-4xl xl:text-[2.95rem] font-editorial-serif italic font-normal text-[#EF233C] leading-[1.08]"
+                  >
+                    Let&apos;s make it happen.
+                  </motion.div>
                 </div>
               </div>
-              <p className="text-sm sm:text-base text-[#8E8D8A] leading-relaxed max-w-xl pt-1">
-                Terbuka untuk kolaborasi proyek web development, rancangan UI/UX, peluang magang, maupun diskusi teknis. Hubungi saya melalui kanal di bawah ini.
-              </p>
+
+              <motion.p
+                initial={prefersReducedMotion ? false : { opacity: 0, y: 14 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, amount: 0.35 }}
+                transition={{ duration: 0.55, delay: 0.16 }}
+                className="text-sm sm:text-base text-[#8E8D8A] leading-relaxed max-w-md"
+              >
+                Terbuka untuk kolaborasi proyek web development, desain antarmuka UI/UX, peluang magang, maupun diskusi teknis. Pilih salah satu kanal di samping atau mulai percakapan langsung via email.
+              </motion.p>
             </div>
 
-            {/* Right Telemetry Panel */}
-            <div className="lg:col-span-5 flex flex-col gap-3 font-mono-tech text-xs border border-[#2A2A2A] bg-[#101010] p-4 sm:p-5">
-              <div className="flex items-center justify-between pb-3 border-b border-[#2A2A2A]">
-                <span className="text-[#8E8D8A] uppercase tracking-wider text-[10px]">CURRENT STATUS</span>
-                <div className="flex items-center gap-2 text-[#F1EEE8] font-semibold text-[11px]">
-                  <span className="relative flex h-2 w-2">
-                    <span className="animate-ping absolute inline-flex h-full w-full bg-[#EF233C] opacity-75" />
-                    <span className="relative inline-flex h-2 w-2 bg-[#EF233C]" />
-                  </span>
-                  <span>{PROFILE_META.availability}</span>
+            {/* Live Signal Telemetry & Magnetic Action Card */}
+            <motion.div
+              initial={prefersReducedMotion ? false : { opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, amount: 0.25 }}
+              transition={{ duration: 0.6, delay: 0.2 }}
+            >
+              <ContactSignalCard className="p-5 sm:p-6 space-y-5">
+                {/* Status Header with Animated Signal Equalizer */}
+                <div className="flex items-center justify-between pb-3.5 border-b border-[#2A2A2A] font-mono-tech text-[10px] tracking-[0.2em] uppercase">
+                  <div className="flex items-center gap-2.5 text-[#F1EEE8]">
+                    <span className="relative flex h-2 w-2">
+                      <span className="animate-ping absolute inline-flex h-full w-full bg-[#EF233C] opacity-75" />
+                      <span className="relative inline-flex h-2 w-2 bg-[#EF233C]" />
+                    </span>
+                    <span className="font-semibold">{PROFILE_META.availability}</span>
+                  </div>
+
+                  {/* Animated Signal Pulse Bars */}
+                  <div className="flex items-end gap-0.5 h-3" aria-hidden="true">
+                    {[0, 1, 2].map((bar) => (
+                      <motion.span
+                        key={bar}
+                        animate={
+                          prefersReducedMotion
+                            ? undefined
+                            : { scaleY: [0.35, 1, 0.45, 0.85, 0.35] }
+                        }
+                        transition={{
+                          duration: 1.4,
+                          repeat: Infinity,
+                          delay: bar * 0.22,
+                          ease: 'easeInOut',
+                        }}
+                        style={{ originY: 1 }}
+                        className="w-[2.5px] h-full bg-[#EF233C]"
+                      />
+                    ))}
+                  </div>
                 </div>
+
+                {/* Location & Live Local Time */}
+                <div className="grid grid-cols-2 gap-4 font-mono-tech text-xs">
+                  <div className="space-y-1">
+                    <span className="flex items-center gap-1.5 text-[10px] tracking-[0.18em] uppercase text-[#8E8D8A]">
+                      <MapPin className="w-3 h-3 text-[#EF233C]" />
+                      BASE
+                    </span>
+                    <p className="text-[#F1EEE8] font-medium">Palembang, ID</p>
+                  </div>
+                  <div className="space-y-1">
+                    <span className="flex items-center gap-1.5 text-[10px] tracking-[0.18em] uppercase text-[#8E8D8A]">
+                      <Clock className="w-3 h-3 text-[#EF233C]" />
+                      LOCAL TIME
+                    </span>
+                    <p className="text-[#F1EEE8] font-medium">{palembangTime || 'WIB // GMT+7'}</p>
+                  </div>
+                </div>
+
+                {/* Magnetic Primary Email CTA + Quick Copy Trigger */}
+                <div className="pt-2 flex flex-wrap items-center gap-3">
+                  <MagneticActionButton
+                    href={emailChannel.href}
+                    onMouseEnter={() => onCursorChange?.('SEND MAIL ↗')}
+                    onMouseLeave={() => onCursorChange?.(null)}
+                    className="group relative flex-1 min-w-[190px] rounded-none inline-flex items-center justify-between gap-3 px-4 py-3 bg-[#EF233C] hover:bg-[#B91C1C] text-[#FFFFFF] font-mono-tech text-xs font-semibold uppercase tracking-[0.18em] transition-colors overflow-hidden"
+                  >
+                    <span className="flex items-center gap-2">
+                      <Send className="w-3.5 h-3.5 transition-transform duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+                      <span>Start a Project</span>
+                    </span>
+                    <span className="relative w-4 h-4 overflow-hidden shrink-0">
+                      <ArrowUpRight className="w-4 h-4 absolute inset-0 transition-transform duration-300 ease-out group-hover:translate-x-4 group-hover:-translate-y-4" />
+                      <ArrowUpRight className="w-4 h-4 absolute inset-0 -translate-x-4 translate-y-4 transition-transform duration-300 ease-out group-hover:translate-x-0 group-hover:translate-y-0" />
+                    </span>
+                  </MagneticActionButton>
+
+                  <button
+                    type="button"
+                    onClick={(e) => handleCopyEmail(e, emailChannel.handle)}
+                    onMouseEnter={() => onCursorChange?.(copied ? 'COPIED ✓' : 'COPY EMAIL')}
+                    onMouseLeave={() => onCursorChange?.(null)}
+                    className="rounded-none inline-flex items-center justify-center gap-2 px-4 py-3 border border-[#2A2A2A] hover:border-[#EF233C] bg-[#101010] hover:bg-[#1D1D1D] text-[#F1EEE8] font-mono-tech text-xs uppercase tracking-[0.16em] transition-colors"
+                    aria-label="Copy email address"
+                  >
+                    <AnimatePresence mode="wait" initial={false}>
+                      {copied ? (
+                        <motion.span
+                          key="copied-icon"
+                          initial={{ scale: 0.6, opacity: 0 }}
+                          animate={{ scale: 1, opacity: 1 }}
+                          exit={{ scale: 0.6, opacity: 0 }}
+                          transition={{ duration: 0.16 }}
+                          className="inline-flex items-center gap-1.5 text-[#EF233C]"
+                        >
+                          <Check className="w-3.5 h-3.5" />
+                          <span>Copied</span>
+                        </motion.span>
+                      ) : (
+                        <motion.span
+                          key="copy-icon"
+                          initial={{ scale: 0.6, opacity: 0 }}
+                          animate={{ scale: 1, opacity: 1 }}
+                          exit={{ scale: 0.6, opacity: 0 }}
+                          transition={{ duration: 0.16 }}
+                          className="inline-flex items-center gap-1.5"
+                        >
+                          <Copy className="w-3.5 h-3.5 text-[#EF233C]" />
+                          <span>Copy</span>
+                        </motion.span>
+                      )}
+                    </AnimatePresence>
+                  </button>
+                </div>
+
+                {/* Floating Copy Feedback Banner */}
+                <AnimatePresence>
+                  {copied && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 6, height: 0 }}
+                      animate={{ opacity: 1, y: 0, height: 'auto' }}
+                      exit={{ opacity: 0, y: -4, height: 0 }}
+                      transition={{ duration: 0.22 }}
+                      className="overflow-hidden"
+                    >
+                      <div className="pt-2 flex items-center gap-2 font-mono-tech text-[10px] tracking-[0.16em] uppercase text-[#EF233C]">
+                        <Check className="w-3.5 h-3.5 shrink-0" />
+                        <span>Email disalin ke clipboard — {emailChannel.handle}</span>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </ContactSignalCard>
+            </motion.div>
+          </div>
+
+          {/* RIGHT COLUMN (7 cols): Interactive Spring-Gliding Channel Directory */}
+          <div className="lg:col-span-7 flex flex-col justify-between">
+            <div className="relative border border-[#2A2A2A] bg-[#141414] overflow-visible flex-1 flex flex-col justify-between">
+              <RegistrationCrosshair className="absolute -top-[7px] -left-[4px] z-20" />
+              <RegistrationCrosshair className="absolute -top-[7px] -right-[4px] z-20" />
+              <RegistrationCrosshair className="absolute -bottom-[7px] -left-[4px] z-20" />
+              <RegistrationCrosshair className="absolute -bottom-[7px] -right-[4px] z-20" />
+
+              {/* Directory Top Header Bar */}
+              <div className="px-5 sm:px-6 py-3.5 border-b border-[#2A2A2A] bg-[#101010] flex items-center justify-between font-mono-tech text-[10px] sm:text-[11px] tracking-[0.2em] uppercase">
+                <div className="flex items-center gap-2 text-[#F1EEE8]">
+                  <span className="w-1.5 h-1.5 bg-[#EF233C]" />
+                  <span>COMMUNICATION DIRECTORY</span>
+                </div>
+                <span className="text-[#8E8D8A]">03 ACTIVE CHANNELS</span>
               </div>
 
-              <div className="flex items-center justify-between pb-3 border-b border-[#2A2A2A]">
-                <span className="text-[#8E8D8A] uppercase tracking-wider text-[10px]">LOCAL TIME</span>
-                <span className="text-[#F1EEE8] tracking-wider text-[11px]">
-                  PALEMBANG, ID • <span className="text-[#EF233C] font-semibold">{palembangTime || '15:20 WIB'}</span>
-                </span>
+              {/* Channels List with Spring Hover Glow */}
+              <div
+                onMouseLeave={() => {
+                  setHoveredIdx(null);
+                  onCursorChange?.(null);
+                }}
+                className="divide-y divide-[#2A2A2A] bg-[#101010] flex-1 flex flex-col justify-around"
+              >
+                {CONTACT_CHANNELS.map((channel, idx) => {
+                  const IconComponent = getContactChannelIcon(channel.label);
+                  const isHovered = hoveredIdx === idx;
+
+                  return (
+                    <motion.div
+                      key={channel.index}
+                      onMouseEnter={() => {
+                        setHoveredIdx(idx);
+                        onCursorChange?.(`${channel.actionLabel.toUpperCase()} ↗`);
+                      }}
+                      onFocus={() => setHoveredIdx(idx)}
+                      initial={prefersReducedMotion ? false : { opacity: 0, x: 20 }}
+                      whileInView={{ opacity: 1, x: 0 }}
+                      viewport={{ once: true, amount: 0.2 }}
+                      transition={{
+                        duration: 0.5,
+                        delay: idx * 0.07,
+                        ease: [0.22, 1, 0.36, 1],
+                      }}
+                      className="group relative py-5 sm:py-6 px-4 sm:px-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4 transition-colors rounded-none overflow-hidden"
+                    >
+                      {/* Background Action Link (No nested buttons inside <a>) */}
+                      <a
+                        href={channel.href}
+                        target={channel.copyable ? undefined : '_blank'}
+                        rel={channel.copyable ? undefined : 'noopener noreferrer'}
+                        className="absolute inset-0 z-10"
+                        aria-label={channel.label}
+                      />
+
+                      {/* Spring-Gliding Active Background Highlight */}
+                      {isHovered && (
+                        <motion.span
+                          layoutId="contact-active-bg"
+                          aria-hidden="true"
+                          transition={{ type: 'spring', stiffness: 420, damping: 34 }}
+                          className="pointer-events-none absolute inset-0 bg-[#1D1D1D]/70 z-0"
+                        />
+                      )}
+
+                      {/* Spring-Gliding Left Crimson Laser Rail */}
+                      {isHovered && (
+                        <motion.span
+                          layoutId="contact-active-rail"
+                          aria-hidden="true"
+                          transition={{ type: 'spring', stiffness: 480, damping: 36 }}
+                          className="pointer-events-none absolute left-0 top-0 bottom-0 w-[3px] bg-[#EF233C] z-10"
+                        />
+                      )}
+
+                      {/* Left: Index + Channel Icon + Animated Label */}
+                      <div className="relative z-10 flex items-center gap-4 pointer-events-none">
+                        <span className="font-mono-tech text-xs font-semibold text-[#EF233C] w-5 shrink-0">
+                          {channel.index}
+                        </span>
+
+                        <span
+                          className={`w-10 h-10 rounded-none border flex items-center justify-center transition-all duration-300 shrink-0 ${
+                            isHovered
+                              ? 'border-[#EF233C] bg-[#EF233C]/10 text-[#EF233C]'
+                              : 'border-[#2A2A2A] bg-[#141414] text-[#8E8D8A]'
+                          }`}
+                        >
+                          <IconComponent className="w-4 h-4 transition-transform duration-300 group-hover:scale-110" />
+                        </span>
+
+                        <div className="transition-transform duration-300 group-hover:translate-x-1.5 min-w-0">
+                          <div className="flex items-center gap-2.5">
+                            <span className="text-lg sm:text-xl font-bold tracking-tight text-[#F1EEE8] group-hover:text-[#EF233C] transition-colors">
+                              {channel.label}
+                            </span>
+                            <span className="hidden md:inline-block font-mono-tech text-[9px] tracking-[0.18em] uppercase px-2 py-0.5 border border-[#2A2A2A] bg-[#141414] text-[#8E8D8A] group-hover:border-[#EF233C]/50 group-hover:text-[#EF233C] transition-colors">
+                              {channel.actionLabel}
+                            </span>
+                          </div>
+                          <span className="block font-mono-tech text-xs text-[#8E8D8A] group-hover:text-[#F1EEE8] transition-colors truncate mt-0.5 max-w-[220px] sm:max-w-[280px]">
+                            {channel.handle}
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Right: Copy Action (for Email) + Kinetic Dual-Arrow Box */}
+                      <div className="relative z-20 flex items-center justify-end gap-3 pl-9 sm:pl-0">
+                        {channel.copyable && (
+                          <button
+                            type="button"
+                            onClick={(e) => handleCopyEmail(e, channel.handle)}
+                            className="rounded-none inline-flex items-center gap-1.5 font-mono-tech text-[10px] uppercase tracking-wider px-3 py-2 border border-[#2A2A2A] bg-[#141414] text-[#F1EEE8] hover:border-[#EF233C] hover:text-[#EF233C] transition-colors pointer-events-auto"
+                            aria-label="Copy email address"
+                          >
+                            {copied ? (
+                              <>
+                                <Check className="w-3.5 h-3.5 text-[#EF233C]" />
+                                <span>Copied</span>
+                              </>
+                            ) : (
+                              <>
+                                <Copy className="w-3.5 h-3.5" />
+                                <span>Copy</span>
+                              </>
+                            )}
+                          </button>
+                        )}
+
+                        <span className="relative w-10 h-10 rounded-none border border-[#2A2A2A] group-hover:border-[#EF233C] group-hover:bg-[#EF233C] flex items-center justify-center text-[#F1EEE8] transition-colors duration-300 shrink-0 overflow-hidden pointer-events-none">
+                          <ArrowUpRight className="w-4 h-4 absolute transition-transform duration-300 ease-out group-hover:translate-x-5 group-hover:-translate-y-5" />
+                          <ArrowUpRight className="w-4 h-4 absolute -translate-x-5 translate-y-5 transition-transform duration-300 ease-out group-hover:translate-x-0 group-hover:translate-y-0 text-[#FFFFFF]" />
+                        </span>
+                      </div>
+                    </motion.div>
+                  );
+                })}
               </div>
 
-              <div className="flex items-center justify-between">
-                <span className="text-[#8E8D8A] uppercase tracking-wider text-[10px]">EST. RESPONSE</span>
-                <span className="text-[#F1EEE8] tracking-wider text-[11px]">&lt; 24 HOURS</span>
+              {/* Directory Bottom Bar */}
+              <div className="px-5 sm:px-6 py-3 border-t border-[#2A2A2A] bg-[#101010] flex items-center justify-between font-mono-tech text-[10px] tracking-[0.18em] uppercase text-[#8E8D8A]">
+                <div className="flex items-center gap-2">
+                  <span className="w-1.5 h-1.5 bg-[#EF233C]" />
+                  <span>DIRECT ENCRYPTED TRANSMISSION</span>
+                </div>
+                <span className="text-[#F1EEE8]">READY</span>
               </div>
             </div>
           </div>
-        </div>
-
-        {/* 3 Symmetrical Channel Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-stretch">
-          {/* CARD 01: EMAIL */}
-          <ContactSignalCard id="email" className="p-6 sm:p-7 flex flex-col justify-between">
-            <div className="space-y-5">
-              {/* Card Header */}
-              <div className="flex items-center justify-between pb-4 border-b border-[#2A2A2A]">
-                <span className="font-mono-tech text-[11px] tracking-[0.2em] text-[#EF233C]">
-                  // 01
-                </span>
-                <div className="w-9 h-9 border border-[#2A2A2A] bg-[#101010] flex items-center justify-center text-[#EF233C]">
-                  <Mail className="w-4 h-4" />
-                </div>
-              </div>
-
-              {/* Title & Description */}
-              <div className="space-y-1.5">
-                <h4 className="text-xl font-bold tracking-tight text-[#F1EEE8]">Email Direct</h4>
-                <p className="text-xs text-[#8E8D8A] leading-relaxed">
-                  Kirim pesan langsung via inbox email untuk penawaran proyek, kerja sama, atau diskusi.
-                </p>
-              </div>
-
-              {/* Contact Handle */}
-              <div className="p-3 border border-[#2A2A2A] bg-[#101010] font-mono-tech text-xs text-[#F1EEE8] break-all select-all flex items-center justify-between gap-2">
-                <span className="truncate">88farisrachman@gmail.com</span>
-                <button
-                  type="button"
-                  onClick={(e) => handleCopyEmail(e, '88farisrachman@gmail.com')}
-                  className="shrink-0 text-[#8E8D8A] hover:text-[#EF233C] transition-colors p-1"
-                  title="Salin email"
-                  aria-label="Salin alamat email"
-                >
-                  {copied ? (
-                    <Check className="w-3.5 h-3.5 text-[#EF233C]" />
-                  ) : (
-                    <Copy className="w-3.5 h-3.5" />
-                  )}
-                </button>
-              </div>
-            </div>
-
-            {/* Action Buttons */}
-            <div className="pt-6 grid grid-cols-2 gap-2.5">
-              <a
-                href="mailto:88farisrachman@gmail.com"
-                className="group relative inline-flex items-center justify-center gap-2 px-3 py-2.5 border border-[#EF233C] bg-[#EF233C] text-[#FFFFFF] font-mono-tech text-xs uppercase tracking-wider font-semibold hover:bg-transparent hover:text-[#EF233C] transition-all duration-300"
-              >
-                <span>Kirim</span>
-                <ArrowUpRight className="w-3.5 h-3.5 transition-transform duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
-              </a>
-              <button
-                type="button"
-                onClick={(e) => handleCopyEmail(e, '88farisrachman@gmail.com')}
-                className="inline-flex items-center justify-center gap-1.5 px-3 py-2.5 border border-[#2A2A2A] bg-[#101010] text-[#F1EEE8] font-mono-tech text-xs uppercase tracking-wider hover:border-[#EF233C] hover:text-[#EF233C] transition-colors duration-300"
-              >
-                {copied ? (
-                  <>
-                    <Check className="w-3.5 h-3.5 text-[#EF233C]" />
-                    <span className="text-[#EF233C]">Tersalin</span>
-                  </>
-                ) : (
-                  <>
-                    <Copy className="w-3.5 h-3.5" />
-                    <span>Salin</span>
-                  </>
-                )}
-              </button>
-            </div>
-          </ContactSignalCard>
-
-          {/* CARD 02: GITHUB */}
-          <ContactSignalCard id="github" className="p-6 sm:p-7 flex flex-col justify-between">
-            <div className="space-y-5">
-              {/* Card Header */}
-              <div className="flex items-center justify-between pb-4 border-b border-[#2A2A2A]">
-                <span className="font-mono-tech text-[11px] tracking-[0.2em] text-[#EF233C]">
-                  // 02
-                </span>
-                <div className="w-9 h-9 border border-[#2A2A2A] bg-[#101010] flex items-center justify-center text-[#EF233C]">
-                  <Github className="w-4 h-4" />
-                </div>
-              </div>
-
-              {/* Title & Description */}
-              <div className="space-y-1.5">
-                <h4 className="text-xl font-bold tracking-tight text-[#F1EEE8]">GitHub</h4>
-                <p className="text-xs text-[#8E8D8A] leading-relaxed">
-                  Jelajahi seluruh repositori kode sumber terbuka, eksperimen proyek, dan commit riwayat.
-                </p>
-              </div>
-
-              {/* Contact Handle */}
-              <div className="p-3 border border-[#2A2A2A] bg-[#101010] font-mono-tech text-xs text-[#F1EEE8] break-all select-all flex items-center justify-between gap-2">
-                <span className="truncate">github.com/Faa-07</span>
-                <span className="shrink-0 text-[10px] font-mono-tech text-[#8E8D8A] uppercase tracking-wider">
-                  SOURCE
-                </span>
-              </div>
-            </div>
-
-            {/* Action Buttons */}
-            <div className="pt-6">
-              <a
-                href="https://github.com/Faa-07"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="group relative w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 border border-[#2A2A2A] bg-[#101010] text-[#F1EEE8] font-mono-tech text-xs uppercase tracking-wider hover:border-[#EF233C] hover:text-[#EF233C] transition-all duration-300"
-              >
-                <span>Buka GitHub</span>
-                <ArrowUpRight className="w-3.5 h-3.5 transition-transform duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
-              </a>
-            </div>
-          </ContactSignalCard>
-
-          {/* CARD 03: INSTAGRAM */}
-          <ContactSignalCard id="instagram" className="p-6 sm:p-7 flex flex-col justify-between">
-            <div className="space-y-5">
-              {/* Card Header */}
-              <div className="flex items-center justify-between pb-4 border-b border-[#2A2A2A]">
-                <span className="font-mono-tech text-[11px] tracking-[0.2em] text-[#EF233C]">
-                  // 03
-                </span>
-                <div className="w-9 h-9 border border-[#2A2A2A] bg-[#101010] flex items-center justify-center text-[#EF233C]">
-                  <Instagram className="w-4 h-4" />
-                </div>
-              </div>
-
-              {/* Title & Description */}
-              <div className="space-y-1.5">
-                <h4 className="text-xl font-bold tracking-tight text-[#F1EEE8]">Instagram</h4>
-                <p className="text-xs text-[#8E8D8A] leading-relaxed">
-                  Terhubung di media sosial untuk interaksi santai, pembaruan aktivitas, dan networking.
-                </p>
-              </div>
-
-              {/* Contact Handle */}
-              <div className="p-3 border border-[#2A2A2A] bg-[#101010] font-mono-tech text-xs text-[#F1EEE8] break-all select-all flex items-center justify-between gap-2">
-                <span className="truncate">@frs8127_</span>
-                <span className="shrink-0 text-[10px] font-mono-tech text-[#8E8D8A] uppercase tracking-wider">
-                  SOCIAL
-                </span>
-              </div>
-            </div>
-
-            {/* Action Buttons */}
-            <div className="pt-6">
-              <a
-                href="https://instagram.com/frs8127_"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="group relative w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 border border-[#2A2A2A] bg-[#101010] text-[#F1EEE8] font-mono-tech text-xs uppercase tracking-wider hover:border-[#EF233C] hover:text-[#EF233C] transition-all duration-300"
-              >
-                <span>Kunjungi Instagram</span>
-                <ArrowUpRight className="w-3.5 h-3.5 transition-transform duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
-              </a>
-            </div>
-          </ContactSignalCard>
         </div>
 
         {/* Bottom Architectural Collaboration Strip */}
@@ -3211,15 +3391,15 @@ function ContactSection({ palembangTime, onCursorChange }) {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, amount: 0.4 }}
           transition={{ duration: 0.55, delay: 0.15 }}
-          className="border border-[#2A2A2A] bg-[#141414] px-4 sm:px-6 py-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 font-mono-tech text-[10px] sm:text-[11px] uppercase tracking-[0.18em] text-[#8E8D8A]"
+          className="border border-[#2A2A2A] bg-[#141414] px-4 sm:px-6 py-3.5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 font-mono-tech text-[10px] sm:text-[11px] uppercase tracking-[0.18em] text-[#8E8D8A]"
         >
-          <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5">
-            <span className="text-[#EF233C] font-semibold">OPEN FOR COLLABORATION:</span>
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+            <span className="text-[#EF233C] font-semibold">OPEN FOR:</span>
             <span className="text-[#F1EEE8]">Frontend Engineering</span>
             <span className="text-[#2A2A2A]">/</span>
-            <span className="text-[#F1EEE8]">UI/UX Architecture</span>
+            <span className="text-[#F1EEE8]">UI/UX Design</span>
             <span className="text-[#2A2A2A]">/</span>
-            <span className="text-[#F1EEE8]">Web System Solutions</span>
+            <span className="text-[#F1EEE8]">Web Systems</span>
             <span className="text-[#2A2A2A]">/</span>
             <span className="text-[#F1EEE8]">Network Maintenance</span>
           </div>
