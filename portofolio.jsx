@@ -394,49 +394,97 @@ function CustomSpringCursor({ label }) {
 
 /**
  * ============================================================================
- * TWO-COLUMN SWISS EDITORIAL BAND PRIMITIVE
- * Enforces the asymmetric 12-column row structure:
- * - Left (lg:col-span-4): Sticky ultra-bold uppercase section title + index
- * - Right (lg:col-span-8): Baseline-aligned editorial content
+ * SWISS EDITORIAL BAND PRIMITIVE
+ * Supports two architectural modes:
+ * - 'stacked': Full-width top editorial header with hairline telemetry rule,
+ *   followed by full 12-column content below (About, Skills, Projects, Experience).
+ * - 'split': Asymmetric 12-column row (sticky title left + content right).
  * ============================================================================
  */
 
-function SwissEditorialBand({ id, index, title, subtitle, children, className = '' }) {
+function SwissEditorialBand({
+  id,
+  index,
+  title,
+  subtitle,
+  children,
+  className = '',
+  layout = 'split',
+  headerMeta = null,
+}) {
   const prefersReducedMotion = useReducedMotion();
 
   return (
     <section
       id={id}
-      className={`relative z-10 border-t border-[#2A2A2A] py-20 md:py-28 ${className}`}
+      className={`relative z-10 border-t border-[#2A2A2A] py-20 md:py-28 scroll-mt-4 ${className}`}
     >
       <div className="max-w-[1380px] mx-auto px-5 sm:px-8 lg:px-12 relative">
         {/* Architectural '+' Registration Marks on Top Hairline */}
         <RegistrationCrosshair className="hidden sm:inline-block absolute -top-[87px] md:-top-[119px] left-5 sm:left-8 lg:left-12" />
         <RegistrationCrosshair className="hidden sm:inline-block absolute -top-[87px] md:-top-[119px] right-5 sm:right-8 lg:right-12" />
 
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-12 items-start">
-          {/* LEFT COLUMN: Sticky Bold Tight-Tracked Uppercase Title */}
-          <div className="lg:col-span-4 lg:sticky lg:top-28 self-start">
-            <div className="flex items-center gap-2.5 font-mono-tech text-xs tracking-[0.2em] uppercase mb-3">
-              <span className="text-[#EF233C] font-semibold">{index}</span>
-              <span className="text-[#2A2A2A]">/</span>
-              <span className="text-[#8E8D8A]">{subtitle}</span>
+        {layout === 'stacked' ? (
+          <div className="space-y-10 md:space-y-14">
+            {/* TOP HEADER: Bold Uppercase Section Title + Structural Rule */}
+            <div className="pb-6 md:pb-8 border-b border-[#2A2A2A] flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+              <div>
+                <div className="flex items-center gap-2.5 font-mono-tech text-xs tracking-[0.2em] uppercase mb-3">
+                  <span className="w-1.5 h-1.5 rounded-none bg-[#EF233C]" />
+                  <span className="text-[#EF233C] font-semibold">{index}</span>
+                  <span className="text-[#2A2A2A]">/</span>
+                  <span className="text-[#8E8D8A]">{subtitle}</span>
+                </div>
+
+                <motion.h2
+                  initial={prefersReducedMotion ? false : { opacity: 0, y: 18 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true, amount: 0.35 }}
+                  transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+                  className="text-4xl sm:text-5xl xl:text-[3.75rem] font-extrabold uppercase tracking-[-0.045em] leading-[0.94] text-[#F1EEE8]"
+                >
+                  {title}
+                </motion.h2>
+              </div>
+
+              {/* Right-Side Architectural Hairline & Telemetry Meta */}
+              <div className="hidden sm:flex items-center gap-3.5 flex-1 max-w-xs md:max-w-md lg:max-w-xl justify-end pb-1.5">
+                <div className="h-[1px] flex-1 bg-[#2A2A2A]" />
+                <span className="w-2.5 h-[1px] bg-[#EF233C] shrink-0" />
+                <span className="font-mono-tech text-[10px] tracking-[0.22em] uppercase text-[#8E8D8A] shrink-0">
+                  {headerMeta || `SEC.${index} // ${subtitle}`}
+                </span>
+              </div>
             </div>
 
-            <motion.h2
-              initial={prefersReducedMotion ? false : { opacity: 0, y: 18 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, amount: 0.35 }}
-              transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-              className="text-4xl sm:text-5xl xl:text-[3.35rem] font-extrabold uppercase tracking-[-0.045em] leading-[0.94] text-[#F1EEE8]"
-            >
-              {title}
-            </motion.h2>
+            {/* BOTTOM CONTENT: Full 12-Column Editorial Space */}
+            <div className="w-full">{children}</div>
           </div>
+        ) : (
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-12 items-start">
+            {/* LEFT COLUMN: Sticky Bold Tight-Tracked Uppercase Title */}
+            <div className="lg:col-span-4 lg:sticky lg:top-28 self-start">
+              <div className="flex items-center gap-2.5 font-mono-tech text-xs tracking-[0.2em] uppercase mb-3">
+                <span className="text-[#EF233C] font-semibold">{index}</span>
+                <span className="text-[#2A2A2A]">/</span>
+                <span className="text-[#8E8D8A]">{subtitle}</span>
+              </div>
 
-          {/* RIGHT COLUMN: Baseline-Aligned Editorial Content */}
-          <div className="lg:col-span-8">{children}</div>
-        </div>
+              <motion.h2
+                initial={prefersReducedMotion ? false : { opacity: 0, y: 18 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, amount: 0.35 }}
+                transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+                className="text-4xl sm:text-5xl xl:text-[3.35rem] font-extrabold uppercase tracking-[-0.045em] leading-[0.94] text-[#F1EEE8]"
+              >
+                {title}
+              </motion.h2>
+            </div>
+
+            {/* RIGHT COLUMN: Baseline-Aligned Editorial Content */}
+            <div className="lg:col-span-8">{children}</div>
+          </div>
+        )}
       </div>
     </section>
   );
@@ -1459,69 +1507,78 @@ function AboutSection() {
   const prefersReducedMotion = useReducedMotion();
 
   return (
-    <SwissEditorialBand id="about" index="01" subtitle="INTRODUCTION" title="ABOUT ME">
-      <div className="grid grid-cols-1 md:grid-cols-12 gap-8 md:gap-10 items-start">
-        {/* Editorial Introduction Copy (Left 7 cols inside Right Column) */}
+    <SwissEditorialBand
+      id="about"
+      index="01"
+      subtitle="INTRODUCTION"
+      title="ABOUT ME"
+      layout="stacked"
+      headerMeta="PROFILE // BIOGRAPHY"
+    >
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-12 items-start lg:items-center">
+        {/* Editorial Introduction Copy (Left 7–8 cols) */}
         <motion.div
           initial={prefersReducedMotion ? false : { opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, amount: 0.25 }}
           transition={{ duration: 0.6 }}
-          className="md:col-span-7 space-y-5"
+          className="lg:col-span-7 xl:col-span-8 space-y-6"
         >
-          <p className="text-xl sm:text-2xl font-medium text-[#F1EEE8] leading-[1.4] tracking-[-0.02em]">
+          <p className="text-2xl sm:text-3xl lg:text-[2rem] font-medium text-[#F1EEE8] leading-[1.35] tracking-[-0.025em] max-w-3xl">
             Hello, I&apos;m{' '}
             <span className="text-[#EF233C] font-semibold">Muhammad Faris Arrachman</span> — an
             Information Systems undergraduate at Fasilkom, Universitas Sriwijaya (UNSRI), based in
             Palembang, Indonesia.
           </p>
 
-          <p className="text-base text-[#8E8D8A] leading-relaxed">
-            Starting from a vocational foundation in{' '}
-            <span className="text-[#F1EEE8]">Computer &amp; Network Engineering (SMK TKJ)</span>, I
-            developed an appreciation for how network infrastructure, routing, and low-level
-            systems operate beneath the surface before anything renders on screen.
-          </p>
+          <div className="space-y-4 max-w-2xl">
+            <p className="text-base sm:text-[17px] text-[#8E8D8A] leading-relaxed">
+              Starting from a vocational foundation in{' '}
+              <span className="text-[#F1EEE8]">Computer &amp; Network Engineering (SMK TKJ)</span>, I
+              developed an appreciation for how network infrastructure, routing, and low-level
+              systems operate beneath the surface before anything renders on screen.
+            </p>
 
-          <p className="text-base text-[#8E8D8A] leading-relaxed">
-            Today, my work centers on{' '}
-            <span className="text-[#F1EEE8]">
-              Frontend Development, UI/UX Design, and web system architecture
-            </span>
-            —crafting typographically sharp, responsive editorial interfaces backed by structured
-            software engineering.
-          </p>
+            <p className="text-base sm:text-[17px] text-[#8E8D8A] leading-relaxed">
+              Today, my work centers on{' '}
+              <span className="text-[#F1EEE8]">
+                Frontend Development, UI/UX Design, and web system architecture
+              </span>
+              —crafting typographically sharp, responsive editorial interfaces backed by structured
+              software engineering.
+            </p>
+          </div>
 
           {/* Compact Metadata Strip */}
-          <div className="pt-5 border-t border-[#2A2A2A] grid grid-cols-1 sm:grid-cols-3 gap-4 font-mono-tech text-xs">
+          <div className="pt-6 border-t border-[#2A2A2A] grid grid-cols-1 sm:grid-cols-3 gap-5 font-mono-tech text-xs max-w-2xl">
             <div>
               <span className="text-[10px] tracking-[0.2em] uppercase text-[#EF233C] block mb-1">
                 LOCATION
               </span>
-              <span className="text-[#F1EEE8]">Palembang, ID</span>
+              <span className="text-[#F1EEE8] text-sm">Palembang, ID</span>
             </div>
             <div>
               <span className="text-[10px] tracking-[0.2em] uppercase text-[#EF233C] block mb-1">
                 CURRENT STUDY
               </span>
-              <span className="text-[#F1EEE8]">Fasilkom UNSRI</span>
+              <span className="text-[#F1EEE8] text-sm">Fasilkom UNSRI</span>
             </div>
             <div>
               <span className="text-[10px] tracking-[0.2em] uppercase text-[#EF233C] block mb-1">
                 BACKGROUND
               </span>
-              <span className="text-[#F1EEE8]">SMK TKJ</span>
+              <span className="text-[#F1EEE8] text-sm">SMK TKJ</span>
             </div>
           </div>
         </motion.div>
 
-        {/* Sharp 0px Minimalist Portrait / Monogram Frame (Right 5 cols inside Right Column) */}
+        {/* Sharp 0px Minimalist Portrait / Monogram Frame (Right 4–5 cols, balanced size) */}
         <motion.div
           initial={prefersReducedMotion ? false : { opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, amount: 0.25 }}
           transition={{ duration: 0.6, delay: 0.08 }}
-          className="md:col-span-5"
+          className="lg:col-span-5 xl:col-span-4 w-full max-w-[380px] mx-auto lg:ml-auto lg:mr-0"
         >
           <div className="relative rounded-none bg-[#1D1D1D] border border-[#2A2A2A] p-4">
             <RegistrationCrosshair className="absolute -top-[7px] -left-[4px]" />
@@ -1583,7 +1640,7 @@ function AboutSection() {
 
 /**
  * ============================================================================
- * ROW 02 — SKILLS (2-COLUMN TYPOGRAPHY SUB-GRID INSIDE RIGHT COLUMN)
+ * ROW 02 — SKILLS (4-COLUMN ARCHITECTURAL GRID ALIGNED TO BLUEPRINT)
  * ============================================================================
  */
 
@@ -1591,8 +1648,15 @@ function SkillsSection() {
   const prefersReducedMotion = useReducedMotion();
 
   return (
-    <SwissEditorialBand id="skills" index="02" subtitle="TOOLKIT & STACK" title="SKILLS">
-      <div className="grid grid-cols-1 md:grid-cols-2 border-t border-l border-[#2A2A2A] bg-[#101010]">
+    <SwissEditorialBand
+      id="skills"
+      index="02"
+      subtitle="TOOLKIT & STACK"
+      title="SKILLS"
+      layout="stacked"
+      headerMeta="04 CORE PILLARS"
+    >
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 border-t border-l border-[#2A2A2A] bg-[#101010]">
         {EXPERTISE_PILLARS.map((pillar, idx) => (
           <motion.div
             key={pillar.index}
@@ -1600,7 +1664,7 @@ function SkillsSection() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, amount: 0.2 }}
             transition={{ duration: 0.5, delay: idx * 0.05 }}
-            className="group relative border-r border-b border-[#2A2A2A] p-6 sm:p-7 flex flex-col justify-between hover:bg-[#1D1D1D] transition-colors duration-300 rounded-none"
+            className="group relative border-r border-b border-[#2A2A2A] p-5 sm:p-6 xl:p-7 flex flex-col justify-between hover:bg-[#1D1D1D] transition-colors duration-300 rounded-none"
           >
             <RegistrationCrosshair className="absolute -top-[7px] -right-[4px]" />
 
@@ -1614,18 +1678,18 @@ function SkillsSection() {
                 </span>
               </div>
 
-              <h3 className="mt-4 text-xl font-bold tracking-[-0.02em] text-[#F1EEE8] group-hover:text-[#EF233C] transition-colors">
+              <h3 className="mt-4 text-lg xl:text-xl font-bold tracking-[-0.02em] text-[#F1EEE8] group-hover:text-[#EF233C] transition-colors leading-snug">
                 {pillar.category}
               </h3>
 
-              <p className="mt-1.5 text-xs text-[#8E8D8A] leading-relaxed">{pillar.subtitle}</p>
+              <p className="mt-2 text-xs text-[#8E8D8A] leading-relaxed">{pillar.subtitle}</p>
             </div>
 
-            <div className="mt-6 pt-4 border-t border-[#2A2A2A] flex flex-wrap gap-2">
+            <div className="mt-7 pt-4 border-t border-[#2A2A2A] flex flex-wrap gap-2">
               {pillar.skills.map((skill) => (
                 <span
                   key={skill}
-                  className="rounded-none font-mono-tech text-xs px-3 py-1.5 bg-[#141414] border border-[#2A2A2A] text-[#F1EEE8] group-hover:border-[#EF233C]/50 transition-colors"
+                  className="rounded-none font-mono-tech text-[11px] xl:text-xs px-2.5 xl:px-3 py-1.5 bg-[#141414] border border-[#2A2A2A] text-[#F1EEE8] group-hover:border-[#EF233C]/50 transition-colors"
                 >
                   {skill}
                 </span>
@@ -1913,13 +1977,13 @@ function ViewportScreenContent({ step, mode, project }) {
 function SibalDeviceMobile({ project, step, isDimmed, isHovered, onHover, onClick }) {
   return (
     <div
-      className={`flex flex-col items-center shrink-0 w-[85px] sm:w-[100px] transition-all duration-300 ${
+      className={`flex flex-col items-center shrink-0 w-[92px] sm:w-[115px] md:w-[130px] lg:w-[148px] transition-all duration-300 ${
         isDimmed ? 'opacity-40 scale-[0.98]' : isHovered ? 'scale-[1.025] z-10' : 'opacity-100'
       }`}
       onMouseEnter={() => onHover?.('mobile')}
       onMouseLeave={() => onHover?.(null)}
     >
-      <div className="font-mono-tech text-[8px] tracking-[0.2em] uppercase text-[#8E8D8A] mb-1 text-center flex items-center gap-1">
+      <div className="font-mono-tech text-[8px] sm:text-[9px] tracking-[0.2em] uppercase text-[#8E8D8A] mb-1.5 text-center flex items-center gap-1">
         <span className={isHovered ? 'text-[#EF233C]' : ''}>MOBILE &bull; 390</span>
       </div>
       <div
@@ -1927,7 +1991,7 @@ function SibalDeviceMobile({ project, step, isDimmed, isHovered, onHover, onClic
         tabIndex={0}
         onClick={onClick}
         onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && onClick()}
-        className={`w-full h-[140px] sm:h-[155px] rounded-none border bg-[#0A0D12] p-1.5 flex flex-col justify-between transition-all duration-300 cursor-pointer relative overflow-hidden select-none ${
+        className={`w-full h-[150px] sm:h-[175px] md:h-[195px] lg:h-[215px] rounded-none border bg-[#0A0D12] p-1.5 sm:p-2 flex flex-col justify-between transition-all duration-300 cursor-pointer relative overflow-hidden select-none ${
           isHovered
             ? 'border-[#EF233C] shadow-[0_0_20px_rgba(239,35,60,0.35)]'
             : 'border-[#1E2630] hover:border-[#EF233C]/70'
@@ -1942,7 +2006,7 @@ function SibalDeviceMobile({ project, step, isDimmed, isHovered, onHover, onClic
         </div>
 
         {/* Bottom CTA Button */}
-        <div className={`mt-1 py-0.5 text-center font-mono-tech text-[7px] tracking-wider uppercase border transition-all ${
+        <div className={`mt-1.5 py-0.5 text-center font-mono-tech text-[7px] sm:text-[8px] tracking-wider uppercase border transition-all ${
           isHovered
             ? 'border-[#EF233C] bg-[#EF233C] text-white shadow-[0_0_10px_#EF233C]'
             : 'border-[#1E2630] text-[#EF233C] hover:border-[#EF233C] hover:bg-[#EF233C] hover:text-white'
@@ -1957,13 +2021,13 @@ function SibalDeviceMobile({ project, step, isDimmed, isHovered, onHover, onClic
 function SibalDeviceTablet({ project, step, isDimmed, isHovered, onHover, onClick }) {
   return (
     <div
-      className={`flex flex-col items-center shrink-0 w-[135px] sm:w-[155px] transition-all duration-300 ${
+      className={`flex flex-col items-center shrink-0 w-[138px] sm:w-[175px] md:w-[205px] lg:w-[235px] transition-all duration-300 ${
         isDimmed ? 'opacity-40 scale-[0.98]' : isHovered ? 'scale-[1.025] z-10' : 'opacity-100'
       }`}
       onMouseEnter={() => onHover?.('tablet')}
       onMouseLeave={() => onHover?.(null)}
     >
-      <div className="font-mono-tech text-[8px] tracking-[0.2em] uppercase text-[#8E8D8A] mb-1 text-center flex items-center gap-1">
+      <div className="font-mono-tech text-[8px] sm:text-[9px] tracking-[0.2em] uppercase text-[#8E8D8A] mb-1.5 text-center flex items-center gap-1">
         <span className={isHovered ? 'text-[#EF233C]' : ''}>TABLET &bull; 768</span>
       </div>
       <div
@@ -1971,7 +2035,7 @@ function SibalDeviceTablet({ project, step, isDimmed, isHovered, onHover, onClic
         tabIndex={0}
         onClick={onClick}
         onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && onClick()}
-        className={`w-full h-[140px] sm:h-[155px] rounded-none border bg-[#0A0D12] p-1.5 flex flex-col justify-between transition-all duration-300 cursor-pointer relative overflow-hidden select-none ${
+        className={`w-full h-[150px] sm:h-[175px] md:h-[195px] lg:h-[215px] rounded-none border bg-[#0A0D12] p-1.5 sm:p-2 flex flex-col justify-between transition-all duration-300 cursor-pointer relative overflow-hidden select-none ${
           isHovered
             ? 'border-[#EF233C] shadow-[0_0_20px_rgba(239,35,60,0.35)]'
             : 'border-[#1E2630] hover:border-[#EF233C]/70'
@@ -1986,7 +2050,7 @@ function SibalDeviceTablet({ project, step, isDimmed, isHovered, onHover, onClic
         </div>
 
         {/* Bottom CTA Button */}
-        <div className={`mt-1 py-0.5 text-center font-mono-tech text-[7px] tracking-wider uppercase border transition-all ${
+        <div className={`mt-1.5 py-0.5 text-center font-mono-tech text-[7px] sm:text-[8px] tracking-wider uppercase border transition-all ${
           isHovered
             ? 'border-[#EF233C] bg-[#EF233C] text-white shadow-[0_0_10px_#EF233C]'
             : 'border-[#1E2630] text-[#EF233C] hover:border-[#EF233C] hover:bg-[#EF233C] hover:text-white'
@@ -2001,13 +2065,13 @@ function SibalDeviceTablet({ project, step, isDimmed, isHovered, onHover, onClic
 function SibalDeviceDesktop({ project, step, isDimmed, isHovered, onHover, onClick }) {
   return (
     <div
-      className={`flex flex-col items-center flex-1 min-w-[190px] sm:min-w-[240px] md:min-w-[280px] transition-all duration-300 ${
+      className={`flex flex-col items-center flex-1 min-w-[190px] sm:min-w-[240px] md:min-w-[290px] lg:max-w-[460px] transition-all duration-300 ${
         isDimmed ? 'opacity-40 scale-[0.98]' : isHovered ? 'scale-[1.025] z-10' : 'opacity-100'
       }`}
       onMouseEnter={() => onHover?.('desktop')}
       onMouseLeave={() => onHover?.(null)}
     >
-      <div className="font-mono-tech text-[8px] tracking-[0.2em] uppercase text-[#8E8D8A] mb-1 text-center flex items-center gap-1">
+      <div className="font-mono-tech text-[8px] sm:text-[9px] tracking-[0.2em] uppercase text-[#8E8D8A] mb-1.5 text-center flex items-center gap-1">
         <span className={isHovered ? 'text-[#EF233C]' : ''}>DESKTOP &bull; 1440</span>
       </div>
       <div
@@ -2015,7 +2079,7 @@ function SibalDeviceDesktop({ project, step, isDimmed, isHovered, onHover, onCli
         tabIndex={0}
         onClick={onClick}
         onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && onClick()}
-        className={`w-full h-[140px] sm:h-[155px] rounded-none border bg-[#0A0D12] p-1.5 flex flex-col justify-between transition-all duration-300 cursor-pointer relative overflow-hidden select-none ${
+        className={`w-full h-[150px] sm:h-[175px] md:h-[195px] lg:h-[215px] rounded-none border bg-[#0A0D12] p-1.5 sm:p-2 flex flex-col justify-between transition-all duration-300 cursor-pointer relative overflow-hidden select-none ${
           isHovered
             ? 'border-[#EF233C] shadow-[0_0_20px_rgba(239,35,60,0.35)]'
             : 'border-[#1E2630] hover:border-[#EF233C]/70'
@@ -2028,7 +2092,7 @@ function SibalDeviceDesktop({ project, step, isDimmed, isHovered, onHover, onCli
             <span className="w-1.5 h-1.5 rounded-full bg-[#3A4553]" />
             <span className="w-1.5 h-1.5 rounded-full bg-[#1E2630]" />
           </div>
-          <div className="font-mono-tech text-[7px] text-[#8E8D8A] px-2 py-0.2 border border-[#1E2630] bg-[#12161F]">
+          <div className="font-mono-tech text-[7px] sm:text-[8px] text-[#8E8D8A] px-2 py-0.5 border border-[#1E2630] bg-[#12161F]">
             {project.id}.faris.dev
           </div>
           <div className="w-3" />
@@ -2040,7 +2104,7 @@ function SibalDeviceDesktop({ project, step, isDimmed, isHovered, onHover, onCli
         </div>
 
         {/* Bottom CTA Button */}
-        <div className={`mt-1 py-0.5 text-center font-mono-tech text-[7px] tracking-wider uppercase border transition-all ${
+        <div className={`mt-1.5 py-0.5 text-center font-mono-tech text-[7px] sm:text-[8px] tracking-wider uppercase border transition-all ${
           isHovered
             ? 'border-[#EF233C] bg-[#EF233C] text-white shadow-[0_0_10px_#EF233C]'
             : 'border-[#1E2630] text-[#EF233C] hover:border-[#EF233C] hover:bg-[#EF233C] hover:text-white'
@@ -2078,7 +2142,7 @@ function ProjectStackCard({
       <RegistrationCrosshair className="absolute -bottom-[7px] -right-[4px] z-20" />
 
       {/* Top Telemetry Header Bar */}
-      <div className="px-3 sm:px-5 py-2 border-b border-[#1E2630] bg-[#090C10] flex items-center justify-between gap-3 font-mono-tech text-xs">
+      <div className="px-4 sm:px-6 py-2.5 border-b border-[#1E2630] bg-[#090C10] flex items-center justify-between gap-3 font-mono-tech text-xs">
         <div className="flex items-center gap-2">
           <span className="w-2 h-2 rounded-none bg-[#EF233C] animate-pulse" />
           <span className="text-[#F1EEE8] font-bold tracking-wider text-[11px] sm:text-xs">
@@ -2109,7 +2173,7 @@ function ProjectStackCard({
                   {SIBAL_STEPS[currentStep].tag}
                 </span>
                 <span className="text-[#2A3441] hidden md:inline">&bull;</span>
-                <span className="text-[#F1EEE8] text-[9px] sm:text-[11px] hidden md:inline truncate max-w-[240px] lg:max-w-[320px]">
+                <span className="text-[#F1EEE8] text-[9px] sm:text-[11px] hidden md:inline truncate max-w-[280px] lg:max-w-[460px]">
                   {SIBAL_STEPS[currentStep].story}
                 </span>
               </motion.div>
@@ -2131,9 +2195,9 @@ function ProjectStackCard({
       </div>
 
       {/* Viewport Canvas Stage (3 Devices: Mobile, Tablet, Desktop) */}
-      <div className="p-3 sm:p-4 bg-[#07090C] relative">
-        <div className="flex items-center justify-between pb-2 font-mono-tech text-[9px] uppercase tracking-[0.2em] text-[#8E8D8A] border-b border-[#1E2630]/60">
-          <span className="text-[#EF233C] flex items-center gap-1">
+      <div className="p-4 sm:p-5 lg:p-6 bg-[#07090C] relative">
+        <div className="flex items-center justify-between pb-2.5 font-mono-tech text-[9px] sm:text-[10px] uppercase tracking-[0.2em] text-[#8E8D8A] border-b border-[#1E2630]/60">
+          <span className="text-[#EF233C] flex items-center gap-1.5">
             <span className="w-1.5 h-1.5 bg-[#EF233C]" />
             RESPONSIVE BUILD
           </span>
@@ -2144,7 +2208,7 @@ function ProjectStackCard({
           </span>
         </div>
 
-        <div className="pt-2.5 pb-1 flex items-end justify-between gap-2.5 sm:gap-4 overflow-hidden">
+        <div className="pt-4 pb-1 flex items-end justify-start md:justify-center gap-3 sm:gap-5 lg:gap-9 overflow-x-auto md:overflow-hidden">
           <SibalDeviceMobile
             project={project}
             step={currentStep}
@@ -2173,22 +2237,22 @@ function ProjectStackCard({
       </div>
 
       {/* Bottom Card Area (Title + Dashes + Overview + Tags) */}
-      <div className="p-3 sm:p-4 md:p-5 border-t border-[#1E2630] bg-[#090C10] grid grid-cols-1 lg:grid-cols-12 gap-3 sm:gap-4 items-start">
+      <div className="p-4 sm:p-5 lg:p-6 border-t border-[#1E2630] bg-[#090C10] grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-6 items-center">
         {/* Left Column (5 cols): Title + Sibal 4-Step Interactive Story Progression Dashes */}
-        <div className="lg:col-span-5 space-y-1.5">
-          <h3 className="text-base sm:text-lg lg:text-xl font-extrabold uppercase tracking-tight text-[#F1EEE8] leading-tight line-clamp-1">
+        <div className="lg:col-span-5 space-y-2">
+          <h3 className="text-lg sm:text-xl lg:text-2xl font-extrabold uppercase tracking-tight text-[#F1EEE8] leading-tight line-clamp-1">
             {project.title}
           </h3>
 
           {/* Sibal 4-Step Interactive Story Progression Dashes */}
-          <div className="pt-0.5 space-y-1">
-            <div className="flex items-center justify-between font-mono-tech text-[8px] uppercase tracking-[0.18em] text-[#8E8D8A]">
+          <div className="pt-0.5 space-y-1 max-w-xs">
+            <div className="flex items-center justify-between font-mono-tech text-[8px] sm:text-[9px] uppercase tracking-[0.18em] text-[#8E8D8A]">
               <span className="text-[#EF233C] font-semibold">BUILD PROCESS STORY</span>
               <span>
                 0{currentStep + 1} &bull; {SIBAL_STEPS[currentStep].shortLabel}
               </span>
             </div>
-            <div className="flex items-center gap-1.5">
+            <div className="flex items-center gap-2">
               {SIBAL_STEPS.map((step, idx) => {
                 const isSelected = currentStep === idx;
                 return (
@@ -2213,7 +2277,7 @@ function ProjectStackCard({
                     </span>
                     <motion.div
                       animate={{
-                        width: isSelected ? 36 : 16,
+                        width: isSelected ? 40 : 18,
                         backgroundColor: isSelected ? '#EF233C' : '#2A3441',
                         boxShadow: isSelected ? '0 0 10px rgba(239,35,60,0.7)' : 'none',
                       }}
@@ -2228,18 +2292,18 @@ function ProjectStackCard({
         </div>
 
         {/* Right Column (7 cols): Overview Description & Action */}
-        <div className="lg:col-span-7 space-y-2.5">
-          <p className="text-[11px] sm:text-xs text-[#8E8D8A] leading-relaxed line-clamp-2">
+        <div className="lg:col-span-7 space-y-3">
+          <p className="text-xs sm:text-sm text-[#8E8D8A] leading-relaxed line-clamp-2">
             {project.overview || project.summary}
           </p>
 
           {/* Tags & Direct 3D Case Study Trigger */}
-          <div className="flex flex-wrap items-center justify-between gap-2">
-            <div className="flex flex-wrap gap-1">
-              {project.stack.slice(0, 4).map((tech) => (
+          <div className="flex flex-wrap items-center justify-between gap-2.5">
+            <div className="flex flex-wrap gap-1.5">
+              {project.stack.slice(0, 5).map((tech) => (
                 <span
                   key={tech}
-                  className="font-mono-tech text-[8px] sm:text-[9px] uppercase tracking-wider px-2 py-0.5 border border-[#1E2630] bg-[#07090C] text-[#F1EEE8] hover:border-[#EF233C] transition-colors"
+                  className="font-mono-tech text-[9px] sm:text-[10px] uppercase tracking-wider px-2.5 py-1 border border-[#1E2630] bg-[#07090C] text-[#F1EEE8] hover:border-[#EF233C] transition-colors"
                 >
                   {tech}
                 </span>
@@ -2249,10 +2313,10 @@ function ProjectStackCard({
             <button
               type="button"
               onClick={() => onOpenModal(project)}
-              className="rounded-none shrink-0 inline-flex items-center gap-1 font-mono-tech text-[9px] sm:text-[10px] uppercase tracking-[0.16em] px-3 py-1.5 bg-[#EF233C] hover:bg-[#B91C1C] text-[#F1EEE8] transition-colors"
+              className="rounded-none shrink-0 inline-flex items-center gap-1.5 font-mono-tech text-[10px] sm:text-[11px] uppercase tracking-[0.16em] px-4 py-2 bg-[#EF233C] hover:bg-[#B91C1C] text-[#F1EEE8] transition-colors"
             >
               <span>VIEW CASE STUDY</span>
-              <ArrowUpRight className="w-3 h-3" />
+              <ArrowUpRight className="w-3.5 h-3.5" />
             </button>
           </div>
         </div>
@@ -2355,7 +2419,14 @@ function ProjectsSection({ onCursorChange }) {
   ];
 
   return (
-    <SwissEditorialBand id="projects" index="03" subtitle="SELECTED ARCHIVE" title="PROJECTS">
+    <SwissEditorialBand
+      id="projects"
+      index="03"
+      subtitle="SELECTED ARCHIVE"
+      title="PROJECTS"
+      layout="stacked"
+      headerMeta="03 SELECTED BUILDS"
+    >
       {/* Tall Scroll Track: pure native scroll height, no wheel hijacking */}
       <div
         ref={containerRef}
@@ -2363,9 +2434,9 @@ function ProjectsSection({ onCursorChange }) {
         className="relative h-[230vh] sm:h-[250vh]"
       >
         {/* Sticky Pinned Stage (sibaldesign.com .hz__stage) */}
-        <div className="sticky top-20 h-[calc(100vh-100px)] min-h-[460px] max-h-[600px] flex flex-col justify-between select-none">
+        <div className="sticky top-20 h-[calc(100vh-96px)] min-h-[520px] max-h-[670px] flex flex-col justify-between select-none">
           {/* Main Card Deck Stacking Stage (grid-area: 1/1 with overflow-hidden to cleanly clip incoming cards) */}
-          <div className="flex-1 grid grid-cols-1 grid-rows-1 place-items-center w-full relative overflow-hidden py-2">
+          <div className="flex-1 grid grid-cols-1 grid-rows-1 place-items-center w-full relative overflow-hidden pt-7 pb-2">
             {PROJECTS_DATA.map((proj, idx) => (
               <ProjectStackCard
                 key={proj.id}
@@ -2379,7 +2450,7 @@ function ProjectsSection({ onCursorChange }) {
           </div>
 
           {/* Sibal-style HUD & Telemetry Status Bar */}
-          <div className="pt-2 border-t border-[#1E2630] flex items-center justify-between font-mono-tech text-[10px] text-[#8E8D8A] tracking-[0.2em]">
+          <div className="pt-2.5 border-t border-[#1E2630] flex items-center justify-between font-mono-tech text-[10px] text-[#8E8D8A] tracking-[0.2em]">
             {/* Left: Project Telemetry Status */}
             <div className="flex items-center gap-2">
               <span className="text-[#EF233C] font-bold">STACK</span>
@@ -2387,13 +2458,13 @@ function ProjectsSection({ onCursorChange }) {
               <span className="text-[#F1EEE8] font-bold">
                 0{activeCardIndex + 1} / 0{PROJECTS_DATA.length}
               </span>
-              <span className="text-[#8E8D8A] hidden sm:inline truncate max-w-[150px] md:max-w-[210px]">
+              <span className="text-[#8E8D8A] hidden sm:inline truncate max-w-[180px] md:max-w-[320px]">
                 {PROJECTS_DATA[activeCardIndex].title}
               </span>
             </div>
 
             {/* Middle: Hairline Progress Bar */}
-            <div className="flex-1 max-w-[150px] sm:max-w-[240px] mx-3 sm:mx-5 h-[2px] bg-[#1E2630] relative overflow-hidden">
+            <div className="flex-1 max-w-[160px] sm:max-w-[280px] md:max-w-[340px] mx-3 sm:mx-6 h-[2px] bg-[#1E2630] relative overflow-hidden">
               <motion.div
                 className="absolute top-0 left-0 bottom-0 bg-[#EF233C] shadow-[0_0_8px_#EF233C]"
                 style={{ width: progressWidth }}
@@ -2805,8 +2876,15 @@ function ExperienceSection({ onCursorChange }) {
   const prefersReducedMotion = useReducedMotion();
 
   return (
-    <SwissEditorialBand id="experience" index="04" subtitle="ACADEMIC & FIELD" title="EXPERIENCE">
-      <div className="border-t border-[#2A2A2A] divide-y divide-[#2A2A2A]">
+    <SwissEditorialBand
+      id="experience"
+      index="04"
+      subtitle="ACADEMIC & FIELD"
+      title="EXPERIENCE"
+      layout="stacked"
+      headerMeta="04 ROLES & FIELDWORK"
+    >
+      <div className="border-y border-[#2A2A2A] divide-y divide-[#2A2A2A]">
         {EXPERIENCE_DATA.map((item, idx) => (
           <motion.div
             key={item.index}
@@ -2825,10 +2903,10 @@ function ExperienceSection({ onCursorChange }) {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, amount: 0.2 }}
             transition={{ duration: 0.5, delay: idx * 0.06 }}
-            className="group py-7 sm:py-8 px-3 sm:px-5 hover:bg-[#1D1D1D]/55 transition-colors grid grid-cols-1 md:grid-cols-12 gap-4 md:gap-6 items-baseline cursor-pointer border border-transparent hover:border-[#EF233C]/30 select-none"
+            className="group py-7 sm:py-9 px-3 sm:px-6 hover:bg-[#1D1D1D]/55 transition-colors grid grid-cols-1 md:grid-cols-12 gap-5 md:gap-8 items-start cursor-pointer border border-transparent hover:border-[#EF233C]/30 select-none"
           >
-            {/* Period & Index */}
-            <div className="md:col-span-4 space-y-1">
+            {/* Period, Index & Organization */}
+            <div className="md:col-span-4 space-y-1.5">
               <div className="flex items-center gap-2 font-mono-tech text-xs">
                 <span className="text-[#EF233C] font-semibold">{item.index}</span>
                 <span className="text-[#2A2A2A]">/</span>
@@ -2837,6 +2915,11 @@ function ExperienceSection({ onCursorChange }) {
               <p className="font-mono-tech text-[10px] tracking-[0.18em] uppercase text-[#8E8D8A]">
                 {item.category}
               </p>
+              {item.organization && (
+                <p className="pt-1 font-mono-tech text-[11px] text-[#F1EEE8]/80">
+                  {item.organization}
+                </p>
+              )}
             </div>
 
             {/* Role / Institution & Description */}
@@ -2845,23 +2928,23 @@ function ExperienceSection({ onCursorChange }) {
                 <h3 className="text-xl sm:text-2xl font-bold tracking-[-0.02em] text-[#F1EEE8] group-hover:text-[#EF233C] transition-colors">
                   {item.title}
                 </h3>
-                <span className="shrink-0 w-8 h-8 rounded-none border border-[#2A2A2A] group-hover:border-[#EF233C] group-hover:bg-[#EF233C] flex items-center justify-center text-[#8E8D8A] group-hover:text-[#FFFFFF] transition-colors">
+                <span className="shrink-0 w-9 h-9 rounded-none border border-[#2A2A2A] group-hover:border-[#EF233C] group-hover:bg-[#EF233C] flex items-center justify-center text-[#8E8D8A] group-hover:text-[#FFFFFF] transition-colors">
                   <ArrowUpRight className="w-4 h-4" />
                 </span>
               </div>
 
-              <p className="text-sm sm:text-base text-[#8E8D8A] leading-relaxed">
+              <p className="text-sm sm:text-base text-[#8E8D8A] leading-relaxed max-w-3xl">
                 {item.description}
               </p>
 
-              <div className="pt-1 flex flex-wrap items-center gap-1.5">
+              <div className="pt-1.5 flex flex-wrap items-center gap-1.5">
                 {item.hasPhotoSlot && (
                   item.isBlackout ? (
-                    <span className="inline-flex items-center gap-1 font-mono-tech text-[10px] uppercase tracking-wider px-2 py-0.5 border border-[#1E2630] bg-[#12161F] text-[#8E8D8A]">
+                    <span className="inline-flex items-center gap-1 font-mono-tech text-[10px] uppercase tracking-wider px-2.5 py-0.5 border border-[#1E2630] bg-[#12161F] text-[#8E8D8A]">
                       <span className="w-1.5 h-1.5 bg-[#EF233C]/60" /> Sertifikat Pending
                     </span>
                   ) : (
-                    <span className="inline-flex items-center gap-1 font-mono-tech text-[10px] uppercase tracking-wider px-2 py-0.5 border border-[#EF233C]/40 bg-[#EF233C]/10 text-[#EF233C]">
+                    <span className="inline-flex items-center gap-1 font-mono-tech text-[10px] uppercase tracking-wider px-2.5 py-0.5 border border-[#EF233C]/40 bg-[#EF233C]/10 text-[#EF233C]">
                       <Award className="w-3 h-3" /> Sertifikat Terverifikasi
                     </span>
                   )
