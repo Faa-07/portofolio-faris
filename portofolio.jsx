@@ -28,6 +28,13 @@ import {
   Upload,
   ChevronLeft,
   ChevronRight,
+  Mail,
+  Send,
+  Github,
+  Linkedin,
+  Instagram,
+  Clock,
+  MapPin,
 } from 'lucide-react';
 
 /**
@@ -2977,13 +2984,155 @@ function ExperienceSection({ onCursorChange }) {
 
 /**
  * ============================================================================
- * ROW 05 — CONTACT (HEADLINE + INTERACTIVE DIRECTORY IN RIGHT COLUMN)
+ * ROW 05 — CONTACT (KINETIC EDITORIAL STAGE + MAGNETIC CTA + SPRING DIRECTORY)
  * ============================================================================
  */
 
-function ContactSection() {
-  const [copied, setCopied] = useState(false);
+function MagneticActionButton({
+  href,
+  onClick,
+  children,
+  className = '',
+  onMouseEnter,
+  onMouseLeave,
+}) {
   const prefersReducedMotion = useReducedMotion();
+  const btnRef = useRef(null);
+  const x = useMotionValue(0);
+  const y = useMotionValue(0);
+  const springX = useSpring(x, { stiffness: 280, damping: 20, mass: 0.35 });
+  const springY = useSpring(y, { stiffness: 280, damping: 20, mass: 0.35 });
+
+  const handleMouseMove = (e) => {
+    if (prefersReducedMotion || !btnRef.current) return;
+    const rect = btnRef.current.getBoundingClientRect();
+    const relX = e.clientX - (rect.left + rect.width / 2);
+    const relY = e.clientY - (rect.top + rect.height / 2);
+    x.set(relX * 0.18);
+    y.set(relY * 0.24);
+  };
+
+  const handleMouseLeave = (e) => {
+    x.set(0);
+    y.set(0);
+    onMouseLeave?.(e);
+  };
+
+  const Component = href ? motion.a : motion.button;
+
+  return (
+    <Component
+      ref={btnRef}
+      href={href}
+      type={href ? undefined : 'button'}
+      onClick={onClick}
+      onMouseMove={handleMouseMove}
+      onMouseEnter={onMouseEnter}
+      onMouseLeave={handleMouseLeave}
+      style={prefersReducedMotion ? undefined : { x: springX, y: springY }}
+      whileTap={prefersReducedMotion ? undefined : { scale: 0.97 }}
+      className={className}
+    >
+      {children}
+    </Component>
+  );
+}
+
+function ContactSignalCard({ children, className = '' }) {
+  const cardRef = useRef(null);
+  const [edgePos, setEdgePos] = useState({ x: 0, y: 0, active: false });
+
+  const handleMouseMove = (e) => {
+    if (!cardRef.current) return;
+    const rect = cardRef.current.getBoundingClientRect();
+    const x = Math.max(0, Math.min(rect.width, e.clientX - rect.left));
+    const y = Math.max(0, Math.min(rect.height, e.clientY - rect.top));
+    setEdgePos({ x, y, active: true });
+  };
+
+  const handleMouseLeave = () => {
+    setEdgePos((prev) => ({ ...prev, active: false }));
+  };
+
+  return (
+    <div
+      ref={cardRef}
+      onMouseMove={handleMouseMove}
+      onMouseLeave={handleMouseLeave}
+      className={`relative rounded-none border border-[#2A2A2A] bg-[#141414] overflow-visible ${className}`}
+    >
+      <RegistrationCrosshair className="absolute -top-[7px] -left-[4px] z-20" />
+      <RegistrationCrosshair className="absolute -top-[7px] -right-[4px] z-20" />
+      <RegistrationCrosshair className="absolute -bottom-[7px] -left-[4px] z-20" />
+      <RegistrationCrosshair className="absolute -bottom-[7px] -right-[4px] z-20" />
+
+      {/* Perimeter-only laser edge highlight (no interior spotlight) */}
+      <svg
+        aria-hidden="true"
+        className="pointer-events-none absolute -inset-[1px] w-[calc(100%+2px)] h-[calc(100%+2px)] z-10 overflow-visible"
+      >
+        <defs>
+          <radialGradient
+            id="contactCardEdgeGlow"
+            cx={edgePos.x}
+            cy={edgePos.y}
+            r="190"
+            gradientUnits="userSpaceOnUse"
+          >
+            <stop offset="0%" stopColor="#EF233C" stopOpacity="1" />
+            <stop offset="45%" stopColor="#EF233C" stopOpacity="0.65" />
+            <stop offset="100%" stopColor="#EF233C" stopOpacity="0" />
+          </radialGradient>
+          <filter id="contactCardEdgeBlur" x="-20%" y="-20%" width="140%" height="140%">
+            <feGaussianBlur stdDeviation="1.5" result="blur" />
+            <feMerge>
+              <feMergeNode in="blur" />
+              <feMergeNode in="SourceGraphic" />
+            </feMerge>
+          </filter>
+        </defs>
+        <rect
+          x="0.75"
+          y="0.75"
+          width="calc(100% - 1.5px)"
+          height="calc(100% - 1.5px)"
+          fill="none"
+          stroke="url(#contactCardEdgeGlow)"
+          strokeWidth="1.5"
+          filter="url(#contactCardEdgeBlur)"
+          style={{
+            opacity: edgePos.active ? 1 : 0,
+            transition: 'opacity 0.25s ease',
+          }}
+        />
+      </svg>
+
+      <div className="relative z-10">{children}</div>
+    </div>
+  );
+}
+
+function getContactChannelIcon(label) {
+  switch (label.toLowerCase()) {
+    case 'email':
+      return Mail;
+    case 'github':
+      return Github;
+    case 'linkedin':
+      return Linkedin;
+    case 'instagram':
+      return Instagram;
+    default:
+      return Globe;
+  }
+}
+
+function ContactSection({ palembangTime, onCursorChange }) {
+  const [copied, setCopied] = useState(false);
+  const [hoveredIdx, setHoveredIdx] = useState(null);
+  const prefersReducedMotion = useReducedMotion();
+
+  const emailChannel = CONTACT_CHANNELS.find((c) => c.copyable) || CONTACT_CHANNELS[0];
 
   const handleCopyEmail = (e, email) => {
     e.preventDefault();
@@ -2991,77 +3140,341 @@ function ContactSection() {
     if (navigator.clipboard && navigator.clipboard.writeText) {
       navigator.clipboard.writeText(email).then(() => {
         setCopied(true);
-        setTimeout(() => setCopied(false), 2200);
+        setTimeout(() => setCopied(false), 2400);
       });
     }
   };
 
   return (
-    <SwissEditorialBand id="contact" index="05" subtitle="INQUIRIES & LINKS" title="CONTACT">
-      <div>
-        <motion.h3
-          initial={prefersReducedMotion ? false : { opacity: 0, y: 18 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, amount: 0.3 }}
-          transition={{ duration: 0.6 }}
-          className="text-3xl sm:text-5xl font-extrabold tracking-[-0.03em] text-[#F1EEE8] leading-[1.06]"
-        >
-          Have an idea?{' '}
-          <span className="font-editorial-serif italic font-normal text-[#EF233C]">
-            Let&apos;s make it happen.
-          </span>
-        </motion.h3>
-
-        {/* Interactive Contact Channels List */}
-        <div className="mt-10 border-t border-[#2A2A2A] divide-y divide-[#2A2A2A]">
-          {CONTACT_CHANNELS.map((channel) => (
-            <a
-              key={channel.index}
-              href={channel.href}
-              target={channel.copyable ? undefined : '_blank'}
-              rel={channel.copyable ? undefined : 'noopener noreferrer'}
-              className="group py-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:bg-[#1D1D1D]/60 px-2 sm:px-4 transition-colors rounded-none"
-            >
-              <div className="flex items-baseline gap-4">
-                <span className="font-mono-tech text-xs text-[#EF233C]">{channel.index}</span>
-                <span className="text-lg sm:text-xl font-bold tracking-tight text-[#F1EEE8] group-hover:text-[#EF233C] transition-colors">
-                  {channel.label}
-                </span>
+    <SwissEditorialBand
+      id="contact"
+      index="05"
+      subtitle="INQUIRIES & LINKS"
+      title="CONTACT"
+      layout="stacked"
+      headerMeta="SIGNAL // DIRECT CHANNEL"
+    >
+      <div className="space-y-10 lg:space-y-12">
+        {/* Main 12-Column Interactive Stage */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10 items-stretch">
+          {/* LEFT COLUMN (5 cols): Kinetic Headline + Live Signal Telemetry & Magnetic CTA */}
+          <div className="lg:col-span-5 flex flex-col justify-between gap-7">
+            <div className="space-y-4">
+              {/* Masked Editorial Kinetic Headline Reveal */}
+              <div className="space-y-1">
+                <div className="overflow-hidden">
+                  <motion.h3
+                    initial={prefersReducedMotion ? false : { y: '100%', opacity: 0 }}
+                    whileInView={{ y: '0%', opacity: 1 }}
+                    viewport={{ once: true, amount: 0.35 }}
+                    transition={{ duration: 0.65, ease: [0.22, 1, 0.36, 1] }}
+                    className="text-3xl sm:text-4xl xl:text-[2.85rem] font-extrabold tracking-[-0.035em] text-[#F1EEE8] leading-[1.06]"
+                  >
+                    Have an idea?
+                  </motion.h3>
+                </div>
+                <div className="overflow-hidden">
+                  <motion.div
+                    initial={prefersReducedMotion ? false : { y: '100%', opacity: 0 }}
+                    whileInView={{ y: '0%', opacity: 1 }}
+                    viewport={{ once: true, amount: 0.35 }}
+                    transition={{ duration: 0.72, delay: 0.08, ease: [0.22, 1, 0.36, 1] }}
+                    className="text-3xl sm:text-4xl xl:text-[2.95rem] font-editorial-serif italic font-normal text-[#EF233C] leading-[1.08]"
+                  >
+                    Let&apos;s make it happen.
+                  </motion.div>
+                </div>
               </div>
 
-              <div className="flex items-center justify-between sm:justify-end gap-4 pl-8 sm:pl-0">
-                <span className="font-mono-tech text-xs sm:text-sm text-[#8E8D8A] group-hover:text-[#F1EEE8] transition-colors break-all">
-                  {channel.handle}
-                </span>
+              <motion.p
+                initial={prefersReducedMotion ? false : { opacity: 0, y: 14 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, amount: 0.35 }}
+                transition={{ duration: 0.55, delay: 0.16 }}
+                className="text-sm sm:text-base text-[#8E8D8A] leading-relaxed max-w-md"
+              >
+                Terbuka untuk kolaborasi proyek web, desain UI/UX, peluang magang, maupun diskusi
+                teknis. Pilih kanal di samping atau mulai percakapan langsung via email.
+              </motion.p>
+            </div>
 
-                {channel.copyable && (
+            {/* Live Signal Telemetry & Magnetic Action Card */}
+            <motion.div
+              initial={prefersReducedMotion ? false : { opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, amount: 0.25 }}
+              transition={{ duration: 0.6, delay: 0.2 }}
+            >
+              <ContactSignalCard className="p-5 sm:p-6 space-y-5">
+                {/* Status Header with Animated Signal Equalizer */}
+                <div className="flex items-center justify-between pb-3.5 border-b border-[#2A2A2A] font-mono-tech text-[10px] tracking-[0.2em] uppercase">
+                  <div className="flex items-center gap-2.5 text-[#F1EEE8]">
+                    <span className="relative flex h-2 w-2">
+                      <span className="animate-ping absolute inline-flex h-full w-full bg-[#EF233C] opacity-75" />
+                      <span className="relative inline-flex h-2 w-2 bg-[#EF233C]" />
+                    </span>
+                    <span className="font-semibold">{PROFILE_META.availability}</span>
+                  </div>
+
+                  {/* Animated Signal Pulse Bars */}
+                  <div className="flex items-end gap-0.5 h-3" aria-hidden="true">
+                    {[0, 1, 2].map((bar) => (
+                      <motion.span
+                        key={bar}
+                        animate={
+                          prefersReducedMotion
+                            ? undefined
+                            : { scaleY: [0.35, 1, 0.45, 0.85, 0.35] }
+                        }
+                        transition={{
+                          duration: 1.4,
+                          repeat: Infinity,
+                          delay: bar * 0.22,
+                          ease: 'easeInOut',
+                        }}
+                        style={{ originY: 1 }}
+                        className="w-[2.5px] h-full bg-[#EF233C]"
+                      />
+                    ))}
+                  </div>
+                </div>
+
+                {/* Location & Live Local Time */}
+                <div className="grid grid-cols-2 gap-4 font-mono-tech text-xs">
+                  <div className="space-y-1">
+                    <span className="flex items-center gap-1.5 text-[10px] tracking-[0.18em] uppercase text-[#8E8D8A]">
+                      <MapPin className="w-3 h-3 text-[#EF233C]" />
+                      BASE
+                    </span>
+                    <p className="text-[#F1EEE8] font-medium">Palembang, ID</p>
+                  </div>
+                  <div className="space-y-1">
+                    <span className="flex items-center gap-1.5 text-[10px] tracking-[0.18em] uppercase text-[#8E8D8A]">
+                      <Clock className="w-3 h-3 text-[#EF233C]" />
+                      LOCAL TIME
+                    </span>
+                    <p className="text-[#F1EEE8] font-medium">{palembangTime || 'WIB // GMT+7'}</p>
+                  </div>
+                </div>
+
+                {/* Magnetic Primary Email CTA + Quick Copy Trigger */}
+                <div className="pt-2 flex flex-wrap items-center gap-3">
+                  <MagneticActionButton
+                    href={emailChannel.href}
+                    onMouseEnter={() => onCursorChange?.('SEND MAIL ↗')}
+                    onMouseLeave={() => onCursorChange?.(null)}
+                    className="group relative flex-1 min-w-[190px] rounded-none inline-flex items-center justify-between gap-3 px-4 py-3 bg-[#EF233C] hover:bg-[#B91C1C] text-[#FFFFFF] font-mono-tech text-xs font-semibold uppercase tracking-[0.18em] transition-colors overflow-hidden"
+                  >
+                    <span className="flex items-center gap-2">
+                      <Send className="w-3.5 h-3.5 transition-transform duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+                      <span>Start a Project</span>
+                    </span>
+                    <span className="relative w-4 h-4 overflow-hidden shrink-0">
+                      <ArrowUpRight className="w-4 h-4 absolute inset-0 transition-transform duration-300 ease-out group-hover:translate-x-4 group-hover:-translate-y-4" />
+                      <ArrowUpRight className="w-4 h-4 absolute inset-0 -translate-x-4 translate-y-4 transition-transform duration-300 ease-out group-hover:translate-x-0 group-hover:translate-y-0" />
+                    </span>
+                  </MagneticActionButton>
+
                   <button
                     type="button"
-                    onClick={(e) => handleCopyEmail(e, channel.handle)}
-                    className="rounded-none inline-flex items-center gap-1.5 font-mono-tech text-[11px] uppercase tracking-wider px-3 py-1.5 border border-[#2A2A2A] bg-[#101010] text-[#F1EEE8] hover:border-[#EF233C] hover:text-[#EF233C] transition-colors"
+                    onClick={(e) => handleCopyEmail(e, emailChannel.handle)}
+                    onMouseEnter={() => onCursorChange?.(copied ? 'COPIED ✓' : 'COPY EMAIL')}
+                    onMouseLeave={() => onCursorChange?.(null)}
+                    className="rounded-none inline-flex items-center justify-center gap-2 px-4 py-3 border border-[#2A2A2A] hover:border-[#EF233C] bg-[#101010] hover:bg-[#1D1D1D] text-[#F1EEE8] font-mono-tech text-xs uppercase tracking-[0.16em] transition-colors"
                     aria-label="Copy email address"
                   >
-                    {copied ? (
-                      <>
-                        <Check className="w-3.5 h-3.5 text-[#EF233C]" />
-                        <span>Copied</span>
-                      </>
-                    ) : (
-                      <>
-                        <Copy className="w-3.5 h-3.5" />
-                        <span>Copy</span>
-                      </>
-                    )}
+                    <AnimatePresence mode="wait" initial={false}>
+                      {copied ? (
+                        <motion.span
+                          key="copied-icon"
+                          initial={{ scale: 0.6, opacity: 0 }}
+                          animate={{ scale: 1, opacity: 1 }}
+                          exit={{ scale: 0.6, opacity: 0 }}
+                          transition={{ duration: 0.16 }}
+                          className="inline-flex items-center gap-1.5 text-[#EF233C]"
+                        >
+                          <Check className="w-3.5 h-3.5" />
+                          <span>Copied</span>
+                        </motion.span>
+                      ) : (
+                        <motion.span
+                          key="copy-icon"
+                          initial={{ scale: 0.6, opacity: 0 }}
+                          animate={{ scale: 1, opacity: 1 }}
+                          exit={{ scale: 0.6, opacity: 0 }}
+                          transition={{ duration: 0.16 }}
+                          className="inline-flex items-center gap-1.5"
+                        >
+                          <Copy className="w-3.5 h-3.5 text-[#EF233C]" />
+                          <span>Copy</span>
+                        </motion.span>
+                      )}
+                    </AnimatePresence>
                   </button>
-                )}
+                </div>
 
-                <span className="w-8 h-8 rounded-none border border-[#2A2A2A] group-hover:border-[#EF233C] group-hover:bg-[#EF233C] flex items-center justify-center text-[#F1EEE8] transition-all duration-300 shrink-0">
-                  <ArrowUpRight className="w-4 h-4" />
-                </span>
-              </div>
-            </a>
-          ))}
+                {/* Floating Copy Feedback Banner */}
+                <AnimatePresence>
+                  {copied && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 6, height: 0 }}
+                      animate={{ opacity: 1, y: 0, height: 'auto' }}
+                      exit={{ opacity: 0, y: -4, height: 0 }}
+                      transition={{ duration: 0.22 }}
+                      className="overflow-hidden"
+                    >
+                      <div className="pt-2 flex items-center gap-2 font-mono-tech text-[10px] tracking-[0.16em] uppercase text-[#EF233C]">
+                        <Check className="w-3.5 h-3.5 shrink-0" />
+                        <span>Email disalin ke clipboard — {emailChannel.handle}</span>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </ContactSignalCard>
+            </motion.div>
+          </div>
+
+          {/* RIGHT COLUMN (7 cols): Interactive Spring-Gliding Channel Directory */}
+          <div className="lg:col-span-7 flex flex-col justify-between">
+            <div
+              onMouseLeave={() => {
+                setHoveredIdx(null);
+                onCursorChange?.(null);
+              }}
+              className="border-y border-[#2A2A2A] divide-y divide-[#2A2A2A] bg-[#101010] flex-1 flex flex-col justify-center"
+            >
+              {CONTACT_CHANNELS.map((channel, idx) => {
+                const IconComponent = getContactChannelIcon(channel.label);
+                const isHovered = hoveredIdx === idx;
+
+                return (
+                  <motion.a
+                    key={channel.index}
+                    href={channel.href}
+                    target={channel.copyable ? undefined : '_blank'}
+                    rel={channel.copyable ? undefined : 'noopener noreferrer'}
+                    onMouseEnter={() => {
+                      setHoveredIdx(idx);
+                      onCursorChange?.(`${channel.actionLabel.toUpperCase()} ↗`);
+                    }}
+                    onFocus={() => setHoveredIdx(idx)}
+                    initial={prefersReducedMotion ? false : { opacity: 0, x: 20 }}
+                    whileInView={{ opacity: 1, x: 0 }}
+                    viewport={{ once: true, amount: 0.2 }}
+                    transition={{
+                      duration: 0.5,
+                      delay: idx * 0.07,
+                      ease: [0.22, 1, 0.36, 1],
+                    }}
+                    className="group relative py-5 sm:py-6 px-4 sm:px-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4 transition-colors rounded-none overflow-hidden"
+                  >
+                    {/* Spring-Gliding Active Background Highlight */}
+                    {isHovered && (
+                      <motion.span
+                        layoutId="contact-active-bg"
+                        aria-hidden="true"
+                        transition={{ type: 'spring', stiffness: 420, damping: 34 }}
+                        className="pointer-events-none absolute inset-0 bg-[#1D1D1D]/60 z-0"
+                      />
+                    )}
+
+                    {/* Spring-Gliding Left Crimson Laser Rail */}
+                    {isHovered && (
+                      <motion.span
+                        layoutId="contact-active-rail"
+                        aria-hidden="true"
+                        transition={{ type: 'spring', stiffness: 480, damping: 36 }}
+                        className="pointer-events-none absolute left-0 top-0 bottom-0 w-[3px] bg-[#EF233C] z-10"
+                      />
+                    )}
+
+                    {/* Left: Index + Channel Icon + Animated Label */}
+                    <div className="relative z-10 flex items-center gap-4">
+                      <span className="font-mono-tech text-xs font-semibold text-[#EF233C] w-5 shrink-0">
+                        {channel.index}
+                      </span>
+
+                      <span
+                        className={`w-10 h-10 rounded-none border flex items-center justify-center transition-all duration-300 shrink-0 ${
+                          isHovered
+                            ? 'border-[#EF233C] bg-[#EF233C]/10 text-[#EF233C]'
+                            : 'border-[#2A2A2A] bg-[#141414] text-[#8E8D8A]'
+                        }`}
+                      >
+                        <IconComponent className="w-4 h-4 transition-transform duration-300 group-hover:scale-110" />
+                      </span>
+
+                      <div className="transition-transform duration-300 group-hover:translate-x-1.5">
+                        <div className="flex items-center gap-2.5">
+                          <span className="text-lg sm:text-xl font-bold tracking-tight text-[#F1EEE8] group-hover:text-[#EF233C] transition-colors">
+                            {channel.label}
+                          </span>
+                          <span className="hidden md:inline-block font-mono-tech text-[9px] tracking-[0.18em] uppercase px-2 py-0.5 border border-[#2A2A2A] bg-[#141414] text-[#8E8D8A] group-hover:border-[#EF233C]/50 group-hover:text-[#EF233C] transition-colors">
+                            {channel.actionLabel}
+                          </span>
+                        </div>
+                        <span className="block font-mono-tech text-xs text-[#8E8D8A] group-hover:text-[#F1EEE8] transition-colors break-all mt-0.5">
+                          {channel.handle}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Right: Copy Action (for Email) + Kinetic Dual-Arrow Box */}
+                    <div className="relative z-10 flex items-center justify-end gap-3 pl-9 sm:pl-0">
+                      {channel.copyable && (
+                        <button
+                          type="button"
+                          onClick={(e) => handleCopyEmail(e, channel.handle)}
+                          className="rounded-none inline-flex items-center gap-1.5 font-mono-tech text-[10px] uppercase tracking-wider px-3 py-2 border border-[#2A2A2A] bg-[#141414] text-[#F1EEE8] hover:border-[#EF233C] hover:text-[#EF233C] transition-colors"
+                          aria-label="Copy email address"
+                        >
+                          {copied ? (
+                            <>
+                              <Check className="w-3.5 h-3.5 text-[#EF233C]" />
+                              <span>Copied</span>
+                            </>
+                          ) : (
+                            <>
+                              <Copy className="w-3.5 h-3.5" />
+                              <span>Copy</span>
+                            </>
+                          )}
+                        </button>
+                      )}
+
+                      <span className="relative w-10 h-10 rounded-none border border-[#2A2A2A] group-hover:border-[#EF233C] group-hover:bg-[#EF233C] flex items-center justify-center text-[#F1EEE8] transition-colors duration-300 shrink-0 overflow-hidden">
+                        <ArrowUpRight className="w-4 h-4 absolute transition-transform duration-300 ease-out group-hover:translate-x-5 group-hover:-translate-y-5" />
+                        <ArrowUpRight className="w-4 h-4 absolute -translate-x-5 translate-y-5 transition-transform duration-300 ease-out group-hover:translate-x-0 group-hover:translate-y-0 text-[#FFFFFF]" />
+                      </span>
+                    </div>
+                  </motion.a>
+                );
+              })}
+            </div>
+          </div>
         </div>
+
+        {/* Bottom Architectural Collaboration Strip */}
+        <motion.div
+          initial={prefersReducedMotion ? false : { opacity: 0, y: 12 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, amount: 0.4 }}
+          transition={{ duration: 0.55, delay: 0.15 }}
+          className="border border-[#2A2A2A] bg-[#141414] px-4 sm:px-6 py-3.5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 font-mono-tech text-[10px] sm:text-[11px] uppercase tracking-[0.18em] text-[#8E8D8A]"
+        >
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+            <span className="text-[#EF233C] font-semibold">OPEN FOR:</span>
+            <span className="text-[#F1EEE8]">Frontend Engineering</span>
+            <span className="text-[#2A2A2A]">/</span>
+            <span className="text-[#F1EEE8]">UI/UX Design</span>
+            <span className="text-[#2A2A2A]">/</span>
+            <span className="text-[#F1EEE8]">Web Systems</span>
+          </div>
+          <div className="flex items-center gap-2 text-[#8E8D8A] shrink-0">
+            <span className="w-1.5 h-1.5 bg-[#EF233C]" />
+            <span>TYPICAL RESPONSE &lt; 24H</span>
+          </div>
+        </motion.div>
       </div>
     </SwissEditorialBand>
   );
@@ -3563,7 +3976,7 @@ export default function App() {
         <SkillsSection />
         <ProjectsSection onCursorChange={setCursorLabel} />
         <ExperienceSection onCursorChange={setCursorLabel} />
-        <ContactSection />
+        <ContactSection palembangTime={palembangTime} onCursorChange={setCursorLabel} />
       </main>
 
       {/* Monumental Full-Bleed Editorial Footer */}
